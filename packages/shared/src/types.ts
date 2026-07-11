@@ -148,6 +148,41 @@ export interface StatsDTO {
   avgRoi: number;
 }
 
+/** Leaderboard rows (wallets pre-truncated for display). */
+export interface StakerEntry {
+  wallet: string;
+  staked: number;
+  tierKey: TierKey | null;
+}
+
+export interface BuyerEntry {
+  wallet: string;
+  invested: number;
+  buys: number;
+}
+
+export interface LeaderboardDTO {
+  stakers: StakerEntry[];
+  buyers: BuyerEntry[];
+}
+
+/** Analytics for the Stats page. */
+export interface StatsDetailDTO {
+  byChain: { chain: Chain; raised: number; projects: number }[];
+  endedRoi: { name: string; ticker: string; roi: number; ath?: number }[];
+  volumeByDay: { day: string; volume: number; buys: number }[];
+  tierDistribution: { tierKey: TierKey; count: number }[];
+}
+
+/** Operator announcement. */
+export interface AnnouncementDTO {
+  id: string;
+  title: string;
+  body: string;
+  tag: 'news' | 'update' | 'alert';
+  ts: string;
+}
+
 export type TierKey = 'ignition' | 'orbit' | 'zenith' | 'apogee';
 
 export interface Tier {

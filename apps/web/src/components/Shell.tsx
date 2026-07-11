@@ -15,8 +15,12 @@ import {
   IconCheck,
   IconFlame,
   IconOrbit,
+  IconCoin,
+  IconNews,
   IconRocket,
   IconSearch,
+  IconSignal,
+  IconTrophy,
   IconWallet,
   IconX,
 } from './icons';
@@ -27,12 +31,23 @@ const NAV = [
   { to: '/portfolio', label: 'Portfolio', icon: IconBriefcase, end: false },
 ];
 
+const NAV_EXPLORE = [
+  { to: '/stats', label: 'Stats', icon: IconSignal, end: false },
+  { to: '/leaderboard', label: 'Leaderboard', icon: IconTrophy, end: false },
+  { to: '/token', label: 'Token', icon: IconCoin, end: false },
+  { to: '/news', label: 'News', icon: IconNews, end: false },
+];
+
 function pageTitle(pathname: string): string {
   if (pathname.startsWith('/sale/')) return 'Sale';
   if (pathname.startsWith('/staking')) return 'Staking';
   if (pathname.startsWith('/portfolio')) return 'Portfolio';
   if (pathname.startsWith('/admin')) return 'Admin';
   if (pathname.startsWith('/apply')) return 'Apply';
+  if (pathname.startsWith('/stats')) return 'Stats';
+  if (pathname.startsWith('/leaderboard')) return 'Leaderboard';
+  if (pathname.startsWith('/token')) return 'Token';
+  if (pathname.startsWith('/news')) return 'News';
   if (pathname.startsWith('/how-it-works')) return 'Guide';
   if (/^\/(terms|privacy|risk)/.test(pathname)) return 'Legal';
   return 'Launchpad';
@@ -101,6 +116,13 @@ function Sidebar() {
 
       <nav className="mt-7 flex flex-col gap-1" aria-label="Primary">
         {NAV.map(({ to, label, icon: Icon, end }) => (
+          <NavLink key={to} to={to} end={end} className="nav-item">
+            <Icon size={16} />
+            {label}
+          </NavLink>
+        ))}
+        <div className="label mb-1 mt-5 px-3">Explore</div>
+        {NAV_EXPLORE.map(({ to, label, icon: Icon, end }) => (
           <NavLink key={to} to={to} end={end} className="nav-item">
             <Icon size={16} />
             {label}
@@ -313,7 +335,7 @@ function MobileNav() {
       className="fixed inset-x-0 bottom-0 z-40 hidden border-t border-line bg-panel/90 backdrop-blur-md max-[900px]:flex"
       aria-label="Primary mobile"
     >
-      {NAV.map(({ to, label, icon: Icon, end }) => (
+      {[...NAV, NAV_EXPLORE[0]!].map(({ to, label, icon: Icon, end }) => (
         <NavLink key={to} to={to} end={end} className="bottom-nav-item">
           <Icon size={18} />
           {label}

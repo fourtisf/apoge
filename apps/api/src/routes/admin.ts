@@ -7,6 +7,7 @@ import { asyncHandler } from '../lib/asyncHandler';
 import { ApiError } from '../lib/errors';
 import { requireAdmin } from '../middleware/adminAuth';
 import { adminLoginLimiter } from '../middleware/rateLimit';
+import { AnnouncementModel, toAnnouncementDTO } from '../models/Announcement';
 import { ApplicationModel, toApplicationDTO } from '../models/Application';
 import { PositionModel } from '../models/Position';
 import { ProjectModel, serializeProject } from '../models/Project';
@@ -187,5 +188,32 @@ adminRouter.get(
   asyncHandler(async (_req, res) => {
     const docs = await ApplicationModel.find().sort({ ts: -1 }).limit(200);
     res.json({ applications: docs.map(toApplicationDTO) });
+  }),
+);
+
+/* ── Announcements (News) ─────────────────────────────────────────── */
+
+const announcementSchema = z.object({
+  title: z.string().min(3).max(120),
+  body: z.string().min(10).max(2000),
+  tag: z.enum(['news', 'update', 'alert']).default('news'),
+});
+
+adminRouter.post(
+  '/news',
+  asyncHandler(async (req, res) => {
+    const input = announcementSchema.parse(req.body);
+    const doc = await AnnouncementModel.create(input);
+    res.status(201).json({ announcement: toAnnouncementDTO(doc) });
+  }),
+);
+
+adminRouter.delete(
+  '/news/:id',
+  asyncHandler(async (req, res) => {
+    const id = z.string().regex(/^[0-9a-fA-F]{24}$/).parse(req.params.id);
+    const doc = await AnnouncementModel.findByIdAndDelete(id);
+    if (!doc) throw new ApiError(404, 'NOT_FOUND', 'Announcement not found');
+    res.json({ deleted: id });
   }),
 );

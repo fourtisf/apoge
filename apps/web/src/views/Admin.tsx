@@ -485,10 +485,84 @@ function ProjectEditor({
 
 /* ── Panel ────────────────────────────────────────────────────────── */
 
+function NewsTab({ token }: { token: string }) {
+  const qc = useQueryClient();
+  const [form, setForm] = useState({ title: '', body: '', tag: 'news' as 'news' | 'update' | 'alert' });
+  const list = useQuery({
+    queryKey: ['news'],
+    queryFn: () => fetch('/api/news').then((r) => r.json()).then((r) => r.announcements),
+  });
+
+  const create = useMutation({
+    mutationFn: () => adminApi.createNews(token, form),
+    onSuccess: () => {
+      toast.success('Announcement published');
+      setForm({ title: '', body: '', tag: 'news' });
+      qc.invalidateQueries({ queryKey: ['news'] });
+    },
+    onError: (err) => toast.error('Publish failed', errMsg(err)),
+  });
+  const remove = useMutation({
+    mutationFn: (id: string) => adminApi.deleteNews(token, id),
+    onSuccess: () => {
+      toast.success('Announcement deleted');
+      qc.invalidateQueries({ queryKey: ['news'] });
+    },
+    onError: (err) => toast.error('Delete failed', errMsg(err)),
+  });
+
+  return (
+    <div className="flex flex-col gap-5">
+      <section className="panel grid grid-cols-2 gap-4 p-6 max-[640px]:grid-cols-1">
+        <Field label="Title">
+          <input className={inputCls} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+        </Field>
+        <Field label="Tag">
+          <select className={inputCls} value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value as typeof form.tag })}>
+            <option value="news">news</option>
+            <option value="update">update</option>
+            <option value="alert">alert</option>
+          </select>
+        </Field>
+        <Field label="Body" wide>
+          <textarea className={`${inputCls} min-h-[100px]`} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} />
+        </Field>
+        <div>
+          <button
+            className="btn btn-gold"
+            disabled={form.title.length < 3 || form.body.length < 10 || create.isPending}
+            onClick={() => create.mutate()}
+          >
+            {create.isPending ? <span className="spinner" /> : 'Publish'}
+          </button>
+        </div>
+      </section>
+
+      {(list.data ?? []).map((a: { id: string; title: string; tag: string; ts: string; body: string }) => (
+        <section key={a.id} className="panel p-5">
+          <div className="flex items-center gap-2.5">
+            <span className="pill">{a.tag}</span>
+            <span className="text-[13.5px] font-semibold text-ivory">{a.title}</span>
+            <span className="num ml-auto text-[10.5px] text-faint">{timeAgo(a.ts)}</span>
+            <button
+              className="btn btn-dim !px-3 !py-1 !text-[11px] !text-red"
+              disabled={remove.isPending}
+              onClick={() => window.confirm(`Delete "${a.title}"?`) && remove.mutate(a.id)}
+            >
+              Delete
+            </button>
+          </div>
+          <p className="mt-2 whitespace-pre-line text-[12.5px] text-muted">{a.body}</p>
+        </section>
+      ))}
+    </div>
+  );
+}
+
 function AdminPanel() {
   const token = useAdmin((s) => s.adminToken)!;
   const setToken = useAdmin((s) => s.setToken);
-  const [tab, setTab] = useState<'projects' | 'applications'>('projects');
+  const [tab, setTab] = useState<'projects' | 'applications' | 'news'>('projects');
   const [editing, setEditing] = useState<{ input: AdminProjectInput; slug: string | null } | null>(null);
 
   const projects = useQuery({
@@ -513,7 +587,7 @@ function AdminPanel() {
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1 rounded-xl border border-line bg-panel p-1">
-          {(['projects', 'applications'] as const).map((t) => (
+          {(['projects', 'applications', 'news'] as const).map((t) => (
             <button key={t} className="tab capitalize" data-on={tab === t} onClick={() => setTab(t)}>
               {t}
             </button>
@@ -538,6 +612,8 @@ function AdminPanel() {
           existingSlug={editing.slug}
           onClose={() => setEditing(null)}
         />
+      ) : tab === 'news' ? (
+        <NewsTab token={token} />
       ) : tab === 'projects' ? (
         projects.isLoading ? (
           <Skeleton className="h-[300px] !rounded-2xl" />

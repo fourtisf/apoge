@@ -14,6 +14,10 @@ sitemapRouter.get(
     const urls = [
       { loc: '/', priority: '1.0' },
       { loc: '/staking', priority: '0.8' },
+      { loc: '/stats', priority: '0.7' },
+      { loc: '/leaderboard', priority: '0.7' },
+      { loc: '/token', priority: '0.7' },
+      { loc: '/news', priority: '0.7' },
       { loc: '/how-it-works', priority: '0.7' },
       { loc: '/apply', priority: '0.6' },
       ...projects.map((p) => ({ loc: `/sale/${p.slug}`, priority: '0.9' })),

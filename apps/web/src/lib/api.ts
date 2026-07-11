@@ -1,13 +1,16 @@
 import type {
   Account,
   ActivityEventDTO,
+  AnnouncementDTO,
   ApplicationDTO,
   Chain,
   ChainType,
+  LeaderboardDTO,
   PortfolioSummary,
   PositionDTO,
   Project,
   StatsDTO,
+  StatsDetailDTO,
 } from '@apogee/shared';
 import { useSession } from '../state/store';
 
@@ -68,6 +71,9 @@ export const api = {
   },
   project: (slug: string) => get<{ project: Project }>(`/projects/${slug}`),
   stats: () => get<{ stats: StatsDTO }>('/stats'),
+  statsDetail: () => get<{ detail: StatsDetailDTO }>('/stats/detail'),
+  leaderboard: () => get<LeaderboardDTO>('/leaderboard'),
+  news: () => get<{ announcements: AnnouncementDTO[] }>('/news'),
   activity: () => get<{ events: ActivityEventDTO[] }>('/activity'),
   account: (wallet: string) => get<{ account: Account }>(`/account/${wallet}`),
   portfolio: (wallet: string) =>
@@ -126,4 +132,12 @@ export const adminApi = {
     request<{ deleted: string }>(`/admin/projects/${slug}`, { method: 'DELETE' }, token),
   applications: (token: string) =>
     request<{ applications: ApplicationDTO[] }>('/admin/applications', undefined, token),
+  createNews: (token: string, input: { title: string; body: string; tag: AnnouncementDTO['tag'] }) =>
+    request<{ announcement: AnnouncementDTO }>(
+      '/admin/news',
+      { method: 'POST', body: JSON.stringify(input) },
+      token,
+    ),
+  deleteNews: (token: string, id: string) =>
+    request<{ deleted: string }>(`/admin/news/${id}`, { method: 'DELETE' }, token),
 };

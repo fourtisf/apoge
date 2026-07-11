@@ -13,6 +13,8 @@ import { activityRouter } from './routes/activity';
 import { adminRouter } from './routes/admin';
 import { applyRouter } from './routes/apply';
 import { authRouter } from './routes/auth';
+import { leaderboardRouter } from './routes/leaderboard';
+import { newsRouter } from './routes/news';
 import { portfolioRouter } from './routes/portfolio';
 import { positionsRouter } from './routes/positions';
 import { projectsRouter } from './routes/projects';
@@ -48,6 +50,8 @@ async function main(): Promise<void> {
   app.use('/api/admin', adminRouter);
   app.use('/api/apply', applyRouter);
   app.use('/api/onchain', onchainRouter);
+  app.use('/api/leaderboard', leaderboardRouter);
+  app.use('/api/news', newsRouter);
   app.use('/sitemap.xml', sitemapRouter);
   app.use('/api/projects', projectsRouter);
   app.use('/api/stats', statsRouter);

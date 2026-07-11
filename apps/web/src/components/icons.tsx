@@ -137,6 +137,27 @@ export const IconLayers = (p: P) => (
   </svg>
 );
 
+export const IconTrophy = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21 1.18.54 2.03 2.03 2.03 3.79" />
+    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+  </svg>
+);
+
+export const IconNews = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0V5" />
+    <path d="M18 14h-8M15 18h-5M10 6h8v4h-8V6Z" />
+  </svg>
+);
+
+export const IconCoin = (p: P) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7.5 16 16H8l4-8.5Z" />
+  </svg>
+);
+
 /** Apogee brand mark: gold peak triangle. */
 export const BrandMark = ({ size = 26 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden>

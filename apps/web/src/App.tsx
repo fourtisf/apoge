@@ -8,10 +8,14 @@ import { Admin } from './views/Admin';
 import { Apply } from './views/Apply';
 import { Home } from './views/Home';
 import { HowItWorks, Privacy, Risk, Terms } from './views/InfoPages';
+import { Leaderboard } from './views/Leaderboard';
+import { News } from './views/News';
 import { NotFound } from './views/NotFound';
 import { Portfolio } from './views/Portfolio';
 import { SaleDetail } from './views/SaleDetail';
 import { Staking } from './views/Staking';
+import { Stats } from './views/Stats';
+import { TokenPage } from './views/TokenPage';
 
 /* The full wallet SDK stack (wagmi/viem/solana) loads only when needed. */
 const WalletHost = lazy(() => import('./wallet/WalletHost'));
@@ -37,6 +41,10 @@ export function App() {
           <Route path="/sale/:slug" element={<SaleDetail />} />
           <Route path="/staking" element={<Staking />} />
           <Route path="/portfolio" element={<Portfolio />} />
+          <Route path="/stats" element={<Stats />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/token" element={<TokenPage />} />
+          <Route path="/news" element={<News />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/apply" element={<Apply />} />
           <Route path="/terms" element={<Terms />} />
