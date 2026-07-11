@@ -249,7 +249,7 @@ export function buildSeedProjects(now: Date = new Date()): Project[] {
       vesting: { tgePct: 20, cliffMonths: 1, linearMonths: 6 },
       supply: 400_000_000,
       initMcap: 5_200_000,
-      fdv: 30_000_000,
+      fdv: 20_000_000,
       listing: 'TBA',
       softCap: 250_000,
       hardCap: 750_000,

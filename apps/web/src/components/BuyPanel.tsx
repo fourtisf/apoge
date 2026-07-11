@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   feeForBuy,
@@ -17,7 +17,7 @@ import { useParticipate, usePortfolio } from '../lib/queries';
 import { toast } from '../state/store';
 import { useWallet } from '../wallet/useWallet';
 import { IconCheck, IconOrbit, IconWallet } from './icons';
-import { Countdown, ProgressBar } from './ui';
+import { Countdown, ProgressBar, useNow } from './ui';
 
 /** Display-only network fee estimate (Phase 1; real gas lands with contracts in Phase 3). */
 const GAS_ESTIMATE: Record<Project['chain'], string> = {
@@ -38,13 +38,23 @@ export function BuyPanel({ project }: { project: Project }) {
   const [confirming, setConfirming] = useState(false);
   const confirmTimer = useRef<number | null>(null);
 
+  /* Don't fire a queued success transition into an unmounted panel. */
+  useEffect(
+    () => () => {
+      if (confirmTimer.current !== null) window.clearTimeout(confirmTimer.current);
+    },
+    [],
+  );
+
+  /* Ticks each second so the panel flips state when the window boundary passes. */
+  const now = useNow();
   const pct = p.hardCap > 0 ? (p.raised / p.hardCap) * 100 : 0;
   const isLive =
     p.status === 'live' &&
     p.startAt !== null &&
     p.endAt !== null &&
-    Date.now() >= new Date(p.startAt).getTime() &&
-    Date.now() <= new Date(p.endAt).getTime();
+    now >= new Date(p.startAt).getTime() &&
+    now <= new Date(p.endAt).getTime();
 
   const investedHere = useMemo(
     () =>
@@ -73,7 +83,11 @@ export function BuyPanel({ project }: { project: Project }) {
             ? 'Insufficient USDC balance'
             : null;
 
-  const canBuy = isLive && !!account && !!tier && !!amount && !validation && !confirming;
+  /* Until the wallet's existing stake in this sale is known, the tier-max
+   * and MAX math would run against 0 invested — hold the buy button. */
+  const limitsReady = !account || (!portfolio.isLoading && !portfolio.isError);
+
+  const canBuy = isLive && !!account && !!tier && !!amount && !validation && !confirming && limitsReady;
 
   const onBuy = async () => {
     if (!canBuy) return;
@@ -252,7 +266,7 @@ export function BuyPanel({ project }: { project: Project }) {
           <button
             className="max-btn"
             onClick={() => setAmount(String(Math.floor(maxSpendable)))}
-            disabled={confirming}
+            disabled={confirming || !limitsReady}
           >
             MAX
           </button>

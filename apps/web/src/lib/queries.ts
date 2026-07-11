@@ -128,9 +128,25 @@ export function useRealtime() {
       qc.invalidateQueries({ queryKey: ['stats'] });
     };
 
+    // After a dropped connection, refetch everything the socket keeps live —
+    // events missed while offline would otherwise leave stale raise bars.
+    let sawInitialConnect = socket.connected;
+    const onConnect = () => {
+      if (!sawInitialConnect) {
+        sawInitialConnect = true;
+        return;
+      }
+      qc.invalidateQueries({ queryKey: ['projects'] });
+      qc.invalidateQueries({ queryKey: ['project'] });
+      qc.invalidateQueries({ queryKey: ['stats'] });
+      qc.invalidateQueries({ queryKey: ['activity'] });
+    };
+
+    socket.on('connect', onConnect);
     socket.on(SOCKET_EVENTS.activityNew, onActivity);
     socket.on(SOCKET_EVENTS.saleProgress, onProgress);
     return () => {
+      socket.off('connect', onConnect);
       socket.off(SOCKET_EVENTS.activityNew, onActivity);
       socket.off(SOCKET_EVENTS.saleProgress, onProgress);
     };

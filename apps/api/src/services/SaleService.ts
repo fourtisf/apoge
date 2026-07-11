@@ -165,31 +165,58 @@ export async function participate(
   const tokens = roundTokens(amountUsd / project.price);
   const txRef = `APG-${crypto.randomBytes(5).toString('hex')}`;
 
-  // Upsert the (wallet, sale) position. includeResultMetadata tells us
-  // whether this insert created it (i.e. first participation in the sale).
-  let positionDoc: PositionDoc;
+  // Undo funds + raise if the position write cannot proceed.
+  const compensate = async () => {
+    await Promise.all([
+      UserModel.updateOne({ wallet }, { $inc: { usdcBalance: totalCost } }),
+      ProjectModel.updateOne({ _id: project._id }, { $inc: { raised: -amountUsd } }),
+    ]);
+  };
+
+  // Write the (wallet, sale) position with the tier cap enforced in the
+  // filter, so concurrent buys from the same wallet can never sum past
+  // maxBuyUsd (the step-4 pre-check only covers the sequential path).
+  // Top-ups $inc into the same position: vesting stays anchored to the
+  // first purchase in Phase 1 (Phase 3 anchors to TGE, one clock per sale).
+  const tierGuard = { $lte: roundUsd(tier.maxBuyUsd - amountUsd) };
+  let positionDoc = await PositionModel.findOneAndUpdate(
+    { wallet, projectId: project._id, invested: tierGuard },
+    { $inc: { invested: amountUsd, tokens }, $set: { txRef } },
+    { new: true },
+  );
   let isFirstPosition = false;
-  try {
-    const result = await PositionModel.findOneAndUpdate(
-      { wallet, projectId: project._id },
-      {
-        $inc: { invested: amountUsd, tokens },
-        $set: { txRef },
-        $setOnInsert: { claimedTokens: 0, createdAt: new Date() },
-      },
-      { upsert: true, new: true, includeResultMetadata: true },
-    );
-    isFirstPosition = !result.lastErrorObject?.updatedExisting;
-    positionDoc = result.value as PositionDoc;
-  } catch (err) {
-    // Two concurrent first buys can collide on the unique (wallet, projectId)
-    // index; the loser retries as a plain update.
-    if ((err as { code?: number }).code !== 11000) throw err;
-    positionDoc = (await PositionModel.findOneAndUpdate(
-      { wallet, projectId: project._id },
-      { $inc: { invested: amountUsd, tokens }, $set: { txRef } },
-      { new: true },
-    )) as PositionDoc;
+  if (!positionDoc) {
+    // Either no position exists yet (first buy) or the guard failed.
+    try {
+      positionDoc = await PositionModel.create({
+        wallet,
+        projectId: project._id,
+        invested: amountUsd,
+        tokens,
+        claimedTokens: 0,
+        txRef,
+      });
+      isFirstPosition = true;
+    } catch (err) {
+      if ((err as { code?: number }).code !== 11000) {
+        await compensate();
+        throw err;
+      }
+      // Concurrent first buy won the insert — retry as a guarded update.
+      positionDoc = await PositionModel.findOneAndUpdate(
+        { wallet, projectId: project._id, invested: tierGuard },
+        { $inc: { invested: amountUsd, tokens }, $set: { txRef } },
+        { new: true },
+      );
+      if (!positionDoc) {
+        await compensate();
+        throw new ApiError(
+          400,
+          'TIER_MAX',
+          `${tier.name} tier allows up to $${tier.maxBuyUsd} cumulative per sale`,
+        );
+      }
+    }
   }
 
   // participants counts unique wallets per sale — bump only on first position.

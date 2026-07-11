@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { buildSeedProjects } from '@apogee/shared';
 import { ActivityEventModel, type ActivityEventEntity } from '../models/ActivityEvent';
+import { PositionModel } from '../models/Position';
 import { ProjectModel } from '../models/Project';
 
 // Base58 alphabet (no 0, O, I, l) — for plausible-looking Solana addresses.
@@ -46,7 +47,13 @@ export async function seedDatabase(force = false): Promise<SeedSummary | null> {
     if (existing > 0) return null;
   }
 
-  await Promise.all([ProjectModel.deleteMany({}), ActivityEventModel.deleteMany({})]);
+  // Positions reference project ids, so a reseed must clear them too or
+  // portfolios would point at dead projects. Users/stakes survive reseeds.
+  await Promise.all([
+    ProjectModel.deleteMany({}),
+    ActivityEventModel.deleteMany({}),
+    PositionModel.deleteMany({}),
+  ]);
 
   const projects = await ProjectModel.insertMany(buildSeedProjects(new Date()));
 

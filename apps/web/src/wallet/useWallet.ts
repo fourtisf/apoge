@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { tierByKey, type Account, type ChainType, type Tier } from '@apogee/shared';
-import { api } from '../lib/api';
+import { api, ApiError } from '../lib/api';
 import { toast, useSession, useUi } from '../state/store';
 import { DEMO_ADDRESS, DEMO_WALLET_ENABLED, signInDemo } from './auth';
 import { getWalletImpl, walletImplReady, type BridgeProviderKind } from './bridge';
@@ -71,7 +71,11 @@ export function useWallet(): UseWalletResult {
     try {
       const { account: fresh } = await api.account(wallet);
       useSession.getState().setAccount(fresh);
-    } catch {
+    } catch (err) {
+      // The account no longer exists (fresh DB after a restart) — drop the
+      // persisted session instead of showing a dead "connected" wallet.
+      // 401s are already handled globally by the api client.
+      if (err instanceof ApiError && err.status === 404) useSession.getState().clear();
       /* keep stale account on transient failures */
     }
   }, []);

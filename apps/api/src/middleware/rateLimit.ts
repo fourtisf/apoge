@@ -25,3 +25,12 @@ export const participateLimiter = rateLimit({
   legacyHeaders: false,
   message: rateLimitBody('Too many participation attempts — try again in a minute'),
 });
+
+/** GET /api/auth/nonce writes a nonce row per call — throttle it like a POST. */
+export const nonceLimiter = rateLimit({
+  windowMs: 60_000,
+  limit: 30,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: rateLimitBody('Too many nonce requests — try again in a minute'),
+});

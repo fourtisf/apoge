@@ -51,7 +51,11 @@ function Bridge() {
     void signIn(address, 'sol', async (message) => {
       const sig = await sol.signMessage!(new TextEncoder().encode(message));
       return base58Encode(sig);
-    }).catch(() => sol.disconnect().catch(() => undefined));
+    }).catch(() => {
+      // Allow a clean retry on the same address after a rejected signature.
+      attempted.current.delete(address);
+      sol.disconnect().catch(() => undefined);
+    });
   }, [sol.publicKey, sol.signMessage, session.account?.wallet, sol]);
 
   /* Auto sign-in: EVM. */
@@ -61,9 +65,10 @@ function Bridge() {
     const normalized = address.toLowerCase();
     if (session.account?.wallet === normalized || attempted.current.has(normalized)) return;
     attempted.current.add(normalized);
-    void signIn(address, 'evm', (message) => signMessageAsync({ message })).catch(() =>
-      disconnectAsync().catch(() => undefined),
-    );
+    void signIn(address, 'evm', (message) => signMessageAsync({ message })).catch(() => {
+      attempted.current.delete(normalized);
+      disconnectAsync().catch(() => undefined);
+    });
   }, [evm.address, session.account?.wallet, signMessageAsync, disconnectAsync]);
 
   useEffect(() => {

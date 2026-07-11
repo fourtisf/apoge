@@ -30,17 +30,33 @@ export interface Env {
   readonly REPO_ROOT: string;
 }
 
-const jwtSecret = process.env.JWT_SECRET;
+const jwtSecret =
+  process.env.JWT_SECRET && process.env.JWT_SECRET !== 'change-me-in-production'
+    ? process.env.JWT_SECRET
+    : undefined;
 if (!jwtSecret) {
+  if (process.env.NODE_ENV === 'production') {
+    console.error(
+      '[env] FATAL: JWT_SECRET must be a strong random value in production (openssl rand -hex 32).',
+    );
+    process.exit(1);
+  }
   console.warn(
     '[env] JWT_SECRET is not set — using an insecure development default. Set JWT_SECRET before deploying.',
   );
+}
+if (
+  process.env.NODE_ENV === 'production' &&
+  (process.env.DEMO_MODE === '1' || process.env.DEMO_MODE === 'true')
+) {
+  console.error('[env] FATAL: DEMO_MODE bypasses signature verification and must be off in production.');
+  process.exit(1);
 }
 
 export const env: Env = {
   PORT: parsePort(process.env.PORT),
   MONGO_URI: process.env.MONGO_URI || undefined,
-  JWT_SECRET: jwtSecret || DEV_JWT_SECRET,
+  JWT_SECRET: jwtSecret ?? DEV_JWT_SECRET,
   DEMO_MODE: process.env.DEMO_MODE === '1' || process.env.DEMO_MODE === 'true',
   REPO_ROOT: repoRoot,
 };

@@ -5,7 +5,7 @@ import { Skeleton, useNow } from './ui';
 
 /** Live purchase ticker — socket-fed via the shared query cache. */
 export function ActivityFeed() {
-  const { data: events, isLoading } = useActivity();
+  const { data: events, isLoading, isError, refetch } = useActivity();
   const now = useNow(30_000);
 
   return (
@@ -23,6 +23,13 @@ export function ActivityFeed() {
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-9" />
           ))}
+        </div>
+      ) : isError ? (
+        <div className="py-5 text-center">
+          <p className="text-[12.5px] text-faint">Couldn’t load activity.</p>
+          <button onClick={() => refetch()} className="btn btn-dim mt-3 !px-3.5 !py-1.5 !text-[12px]">
+            Retry
+          </button>
         </div>
       ) : !events?.length ? (
         <p className="py-6 text-center text-[12.5px] text-faint">No purchases yet. Be the first.</p>

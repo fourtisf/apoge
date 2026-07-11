@@ -42,7 +42,7 @@ function ClaimButton({ position }: { position: PositionDTO }) {
 
 export function Portfolio() {
   const { account, connect } = useWallet();
-  const { data, isLoading } = usePortfolio(account?.wallet ?? null);
+  const { data, isLoading, isError, refetch } = usePortfolio(account?.wallet ?? null);
 
   /* Empty state: no wallet. */
   if (!account) {
@@ -72,6 +72,21 @@ export function Portfolio() {
           ))}
         </div>
         <Skeleton className="h-[280px] !rounded-2xl" />
+      </div>
+    );
+  }
+
+  /* Error state — never masquerade a failed fetch as an empty portfolio. */
+  if (isError) {
+    return (
+      <div className="panel mx-auto mt-10 max-w-md p-10 text-center">
+        <h2 className="text-[16px] font-semibold text-ivory">Couldn’t load your portfolio</h2>
+        <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
+          The API didn’t respond. Your allocations are safe — try again in a moment.
+        </p>
+        <button onClick={() => refetch()} className="btn btn-ghost mt-5">
+          Retry
+        </button>
       </div>
     );
   }

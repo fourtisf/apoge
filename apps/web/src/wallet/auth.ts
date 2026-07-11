@@ -13,7 +13,9 @@ export async function signIn(
   chainType: ChainType,
   sign: (message: string) => Promise<string>,
 ): Promise<void> {
-  if (inFlight) return;
+  // Throw rather than resolve, so a concurrent caller never mistakes the
+  // other flow's outcome for its own success.
+  if (inFlight) throw new Error('Sign-in already in progress');
   inFlight = true;
   try {
     const { message } = await api.nonce(wallet, chainType);

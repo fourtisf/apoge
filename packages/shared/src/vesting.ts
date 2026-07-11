@@ -27,7 +27,8 @@ export function vestedPctFor(
 
   const linearElapsed = Math.min(1, (elapsed - cliffMs) / linearMs);
   const pct = vesting.tgePct + (100 - vesting.tgePct) * linearElapsed;
-  return Math.min(100, Math.round(pct * 10) / 10);
+  // Round DOWN so claims can never run ahead of the true vesting curve.
+  return Math.min(100, Math.floor(pct * 10) / 10);
 }
 
 /** Tokens currently claimable for a position. */

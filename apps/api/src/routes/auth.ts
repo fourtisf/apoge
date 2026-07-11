@@ -7,6 +7,7 @@ import { verifyMessage } from 'viem';
 import { z } from 'zod';
 import { env } from '../env';
 import { asyncHandler } from '../lib/asyncHandler';
+import { nonceLimiter } from '../middleware/rateLimit';
 import { ApiError } from '../lib/errors';
 import { isValidWallet, normalizeWallet } from '../lib/wallet';
 import { NonceModel } from '../models/Nonce';
@@ -79,6 +80,7 @@ export const authRouter = Router();
  */
 authRouter.get(
   '/nonce',
+  nonceLimiter,
   asyncHandler(async (req, res) => {
     const parsed = nonceQuerySchema.parse(req.query);
     const wallet = normalizeWallet(parsed.wallet, parsed.chainType);
@@ -105,7 +107,9 @@ authRouter.post(
     const body = verifyBodySchema.parse(req.body);
     const wallet = normalizeWallet(body.wallet, body.chainType);
 
-    const record = await NonceModel.findOne({ wallet });
+    // Atomically consume the nonce up front: a failed verification burns it,
+    // and concurrent replays of the same signature can never both succeed.
+    const record = await NonceModel.findOneAndDelete({ wallet });
     if (!record || record.expiresAt.getTime() < Date.now()) {
       throw new ApiError(400, 'NONCE_EXPIRED', 'Nonce missing or expired — request a new one');
     }
@@ -120,8 +124,6 @@ authRouter.post(
           : verifySolSignature(wallet, message, body.signature);
       if (!valid) throw new ApiError(401, 'INVALID_SIGNATURE', 'Signature verification failed');
     }
-
-    await NonceModel.deleteOne({ _id: record._id }); // single-use
 
     // First-time users start with the demo balances (schema defaults).
     const existing = await UserModel.findOne({ wallet });
