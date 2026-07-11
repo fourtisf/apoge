@@ -9,3 +9,7 @@ build/
 .mongodb-binaries/
 coverage/
 .turbo/
+
+# Hardhat
+packages/contracts/artifacts/
+packages/contracts/cache/
