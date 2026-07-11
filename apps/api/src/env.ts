@@ -31,6 +31,10 @@ export interface Env {
   /** Telegram ops notifications — both unset = notifications off. */
   readonly TELEGRAM_BOT_TOKEN: string | undefined;
   readonly TELEGRAM_CHAT_ID: string | undefined;
+  /** Phase 3: per-chain deployed addresses, JSON — {"84532":{"staking":"0x…","usdc":"0x…","apg":"0x…"}} */
+  readonly ONCHAIN_CONTRACTS: string | undefined;
+  /** Phase 3: per-chain RPC overrides, JSON — {"84532":"https://…"} */
+  readonly ONCHAIN_RPC: string | undefined;
   /** Public origin used in sitemap/canonical URLs. */
   readonly PUBLIC_ORIGIN: string;
   /** Absolute path of the monorepo root. */
@@ -68,6 +72,8 @@ export const env: Env = {
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || undefined,
   TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || undefined,
   TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID || undefined,
+  ONCHAIN_CONTRACTS: process.env.ONCHAIN_CONTRACTS || undefined,
+  ONCHAIN_RPC: process.env.ONCHAIN_RPC || undefined,
   PUBLIC_ORIGIN: process.env.PUBLIC_ORIGIN || 'https://apoge.fun',
   REPO_ROOT: repoRoot,
 };

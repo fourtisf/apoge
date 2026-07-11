@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   feeForBuy,
@@ -17,7 +17,10 @@ import { useParticipate, usePortfolio } from '../lib/queries';
 import { toast } from '../state/store';
 import { useWallet } from '../wallet/useWallet';
 import { IconCheck, IconOrbit, IconWallet } from './icons';
-import { Countdown, ProgressBar, useNow } from './ui';
+import { Countdown, ProgressBar, Skeleton, useNow } from './ui';
+
+/* Phase 3 settlement panel — wagmi/viem stay in a lazy chunk. */
+const OnchainBuyPanel = lazy(() => import('./OnchainBuyPanel'));
 
 /** Display-only network fee estimate (Phase 1; real gas lands with contracts in Phase 3). */
 const GAS_ESTIMATE: Record<Project['chain'], string> = {
@@ -164,7 +167,13 @@ export function BuyPanel({ project }: { project: Project }) {
 
   let body: React.ReactNode;
 
-  if (success) {
+  if (p.settlement === 'onchain') {
+    body = (
+      <Suspense fallback={<Skeleton className="mt-5 h-40" />}>
+        <OnchainBuyPanel project={p} />
+      </Suspense>
+    );
+  } else if (success) {
     body = (
       <div className="success-pop mt-5 rounded-xl border border-mint/30 bg-mint/5 p-5 text-center">
         <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-mint/15 text-mint">

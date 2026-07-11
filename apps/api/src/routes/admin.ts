@@ -93,9 +93,24 @@ const projectInputSchema = z.object({
   kycTeam: z.boolean(),
   auditUrl: z.string().url().optional().or(z.literal('')),
   featured: z.boolean().optional(),
+  settlement: z.enum(['offchain', 'onchain']).optional(),
+  chainId: z.number().int().positive().optional(),
+  saleContract: z
+    .string()
+    .regex(/^0x[0-9a-fA-F]{40}$/, 'must be a 0x… contract address')
+    .optional()
+    .or(z.literal('')),
   roi: z.number().positive().optional(),
   ath: z.number().positive().optional(),
   cex: z.array(z.string().min(1).max(24)).max(8).optional(),
+}).superRefine((val, ctx) => {
+  if (val.settlement === 'onchain' && (!val.chainId || !val.saleContract)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['saleContract'],
+      message: 'onchain settlement requires both chainId and saleContract',
+    });
+  }
 });
 
 /** '' → undefined so optional URL fields don't persist empty strings. */
@@ -103,7 +118,12 @@ function cleanProjectInput(input: z.infer<typeof projectInputSchema>) {
   const socials = Object.fromEntries(
     Object.entries(input.socials).filter(([, v]) => v && v.length > 0),
   );
-  return { ...input, socials, auditUrl: input.auditUrl || undefined };
+  return {
+    ...input,
+    socials,
+    auditUrl: input.auditUrl || undefined,
+    saleContract: input.saleContract || undefined,
+  };
 }
 
 adminRouter.use(requireAdmin);

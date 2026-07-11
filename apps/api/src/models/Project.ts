@@ -39,7 +39,10 @@ const socialsSchema = new Schema<Project['socials']>(
   { _id: false },
 );
 
-const projectSchema = new Schema<Project>(
+/** Internal persistence shape: shared Project + indexer cursor. */
+export type ProjectEntity = Project & { lastIndexedBlock?: number };
+
+const projectSchema = new Schema<ProjectEntity>(
   {
     slug: { type: String, required: true, unique: true },
     name: { type: String, required: true },
@@ -71,6 +74,12 @@ const projectSchema = new Schema<Project>(
     kycTeam: { type: Boolean, required: true },
     auditUrl: { type: String },
     featured: { type: Boolean },
+    // Phase 3 on-chain settlement.
+    settlement: { type: String, enum: ['offchain', 'onchain'] },
+    chainId: { type: Number },
+    saleContract: { type: String },
+    // Internal indexer cursor — never serialized to clients.
+    lastIndexedBlock: { type: Number },
     // Post-listing performance — only present for ended sales.
     roi: { type: Number },
     ath: { type: Number },
@@ -79,13 +88,16 @@ const projectSchema = new Schema<Project>(
   { versionKey: false, minimize: false },
 );
 
-export type ProjectDoc = HydratedDocument<Project>;
+export type ProjectDoc = HydratedDocument<ProjectEntity>;
 
-export const ProjectModel = mongoose.model<Project>('Project', projectSchema);
+export const ProjectModel = mongoose.model<ProjectEntity>('Project', projectSchema);
 
 /** Strip Mongo internals so the wire shape is exactly the shared `Project`. */
 export function serializeProject(doc: ProjectDoc): Project {
-  const { _id, ...project } = doc.toObject<Project & { _id: unknown }>();
+  const { _id, ...project } = doc.toObject<
+    Project & { _id: unknown; lastIndexedBlock?: number }
+  >();
+  delete (project as { lastIndexedBlock?: number }).lastIndexedBlock;
   // raised is $inc-mutated by participations — keep the wire value at 2dp.
   project.raised = Math.round(project.raised * 100) / 100;
   return project as Project;

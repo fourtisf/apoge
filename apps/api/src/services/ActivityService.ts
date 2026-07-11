@@ -52,3 +52,29 @@ export async function recordEvent(
   });
   return toActivityDTO(doc, project);
 }
+
+/**
+ * Idempotent variant for chain-indexed events: the unique sparse dedupeKey
+ * makes replays (cursor overlap, indexer restart) a no-op. Returns null when
+ * the event was already ingested.
+ */
+export async function recordEventOnce(
+  wallet: string,
+  project: ProjectDoc,
+  amountUsd: number,
+  dedupeKey: string,
+): Promise<ActivityEventDTO | null> {
+  try {
+    const doc = await ActivityEventModel.create({
+      wallet,
+      projectId: project._id,
+      amountUsd,
+      ts: new Date(),
+      dedupeKey,
+    });
+    return toActivityDTO(doc, project);
+  } catch (err) {
+    if ((err as { code?: number }).code === 11000) return null;
+    throw err;
+  }
+}

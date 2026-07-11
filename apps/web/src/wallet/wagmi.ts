@@ -1,5 +1,5 @@
 import { createConfig, http } from 'wagmi';
-import { base, bsc, mainnet } from 'wagmi/chains';
+import { base, baseSepolia, bsc, hardhat, mainnet } from 'wagmi/chains';
 import { coinbaseWallet, injected, walletConnect } from 'wagmi/connectors';
 
 const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID as string | undefined;
@@ -7,7 +7,8 @@ const wcProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID as string | un
 /** EVM wallet config: MetaMask (injected), Coinbase Wallet, and
  *  WalletConnect v2 when a project id is configured. */
 export const wagmiConfig = createConfig({
-  chains: [mainnet, base, bsc],
+  // Mainnets + Base Sepolia (Phase 2 testnet dry-runs) + local hardhat (dev).
+  chains: [mainnet, base, bsc, baseSepolia, hardhat],
   connectors: [
     injected(),
     coinbaseWallet({ appName: 'Apogee' }),
@@ -17,6 +18,8 @@ export const wagmiConfig = createConfig({
     [mainnet.id]: http(),
     [base.id]: http(),
     [bsc.id]: http(),
+    [baseSepolia.id]: http(),
+    [hardhat.id]: http(),
   },
 });
 

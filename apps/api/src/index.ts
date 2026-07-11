@@ -7,6 +7,7 @@ import { env } from './env';
 import { errorHandler, notFoundHandler } from './middleware/errors';
 import { postLimiter } from './middleware/rateLimit';
 import { initRealtime } from './realtime';
+import { startChainIndexer } from './services/ChainIndexer';
 import { startSaleScheduler } from './services/SaleScheduler';
 import { activityRouter } from './routes/activity';
 import { adminRouter } from './routes/admin';
@@ -15,6 +16,7 @@ import { authRouter } from './routes/auth';
 import { portfolioRouter } from './routes/portfolio';
 import { positionsRouter } from './routes/positions';
 import { projectsRouter } from './routes/projects';
+import { onchainRouter } from './routes/onchain';
 import { salesRouter } from './routes/sales';
 import { sitemapRouter } from './routes/sitemap';
 import { stakingRouter } from './routes/staking';
@@ -45,6 +47,7 @@ async function main(): Promise<void> {
   app.use('/api/auth', authRouter);
   app.use('/api/admin', adminRouter);
   app.use('/api/apply', applyRouter);
+  app.use('/api/onchain', onchainRouter);
   app.use('/sitemap.xml', sitemapRouter);
   app.use('/api/projects', projectsRouter);
   app.use('/api/stats', statsRouter);
@@ -60,6 +63,7 @@ async function main(): Promise<void> {
   const server = http.createServer(app);
   initRealtime(server);
   startSaleScheduler();
+  startChainIndexer();
 
   server.listen(env.PORT, () => {
     console.log(`[api] Apogee API listening on http://localhost:${env.PORT}`);

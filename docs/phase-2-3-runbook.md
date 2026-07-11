@@ -26,12 +26,17 @@ guards + SafeERC20 throughout; fee-on-transfer payment tokens unsupported by des
      and a demo sale, fully funded.
    - Exercise every path with real wallets: stake → tier → approve → buy → finalize →
      TGE → claim; plus a failed sale → refund.
-2. **Wire the web app to on-chain sales** (engineering, next build step)
-   - `Project` gains `settlement: 'offchain' | 'onchain'` + `saleContract`, `chainId`.
-   - BuyPanel for on-chain sales: `approve` → `buy` via wagmi; raised/participants
-     indexed from `Purchased` events by the API (viem `watchContractEvent`).
-   - Staking page drives the staking contract when connected to the sale's chain.
-   - Off-chain sales keep working unchanged — the two settle modes coexist.
+2. **Wire the web app to on-chain sales** — ✅ DONE
+   - `Project` has `settlement: 'offchain' | 'onchain'` + `saleContract` + `chainId`
+     (set per project in `/admin`); both modes coexist.
+   - On-chain BuyPanel (lazy chunk): connect EVM wallet → switch network → inline
+     APG staking when tier-less → USDC approve → buy → claim/refund after finalize.
+   - API `ChainIndexer` polls `Purchased` events (cursor persisted, idempotent via
+     a unique dedupe key, 2k-block backfill on first sighting) and mirrors
+     raised/participants into Mongo → same sockets/stats as off-chain sales.
+   - Infra addresses served from `ONCHAIN_CONTRACTS` env via `GET /api/onchain/config`.
+   - Verified end-to-end against a local Hardhat chain: buys from a real wallet
+     appeared in the feed exactly once, raise bar mirrored contract state.
 3. **KYC + geo-blocking** (operations + engineering)
    - Pick a vendor (Sumsub, Persona, Veriff — all have crypto templates). Gate
      `participate`/`buy` behind a `kycApproved` flag on the account; block restricted

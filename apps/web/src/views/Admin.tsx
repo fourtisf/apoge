@@ -5,9 +5,11 @@ import { persist } from 'zustand/middleware';
 import {
   CHAIN_META,
   fmtUsdCompact,
+  ONCHAIN_CHAINS,
   type Chain,
   type Project,
   type ProjectStatus,
+  type SettlementMode,
 } from '@apogee/shared';
 import { IconCheck, IconX } from '../components/icons';
 import { ChainPill, LogoTile, Skeleton, StatusPill } from '../components/ui';
@@ -63,6 +65,7 @@ const BLANK: AdminProjectInput = {
   participants: 0,
   audited: false,
   kycTeam: false,
+  settlement: 'offchain',
 };
 
 function toInput(p: Project): AdminProjectInput {
@@ -322,6 +325,43 @@ function ProjectEditor({
         <Field label="Audit report URL" wide>
           <input className={inputCls} value={p.auditUrl ?? ''} onChange={(e) => set('auditUrl', e.target.value || undefined)} />
         </Field>
+
+        <Field label="Settlement (Phase 3)">
+          <select
+            className={inputCls}
+            value={p.settlement ?? 'offchain'}
+            onChange={(e) => set('settlement', e.target.value as SettlementMode)}
+          >
+            <option value="offchain">offchain · simulated (Phase 1)</option>
+            <option value="onchain">onchain · real contract</option>
+          </select>
+        </Field>
+        {p.settlement === 'onchain' && (
+          <>
+            <Field label="Sale chain">
+              <select
+                className={inputCls}
+                value={p.chainId ?? ''}
+                onChange={(e) => set('chainId', e.target.value ? Number(e.target.value) : undefined)}
+              >
+                <option value="">— pick a chain —</option>
+                {Object.entries(ONCHAIN_CHAINS).map(([id, info]) => (
+                  <option key={id} value={id}>
+                    {info.name} ({id}){info.testnet ? ' · testnet' : ''}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="ApogeeSale contract address" wide>
+              <input
+                className={inputCls}
+                placeholder="0x…"
+                value={p.saleContract ?? ''}
+                onChange={(e) => set('saleContract', e.target.value || undefined)}
+              />
+            </Field>
+          </>
+        )}
 
         <Field label={`Tokenomics (sum ${tokenomicsSum}%)`} wide>
           <div className="flex flex-col gap-2">

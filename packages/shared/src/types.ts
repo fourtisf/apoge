@@ -72,6 +72,12 @@ export interface Project {
   auditUrl?: string;
   /** Admin-pinned featured launch (falls back to live sale ending soonest). */
   featured?: boolean;
+  /** Phase 3: how buys settle. Default 'offchain' (simulated Phase 1). */
+  settlement?: 'offchain' | 'onchain';
+  /** EVM chain id of the sale contract (onchain settlement only). */
+  chainId?: number;
+  /** ApogeeSale contract address (onchain settlement only). */
+  saleContract?: string;
   /** Post-listing performance — only for ended sales. */
   roi?: number;
   ath?: number;
