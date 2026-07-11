@@ -127,7 +127,7 @@ function WalletButton() {
 
   if (!account) {
     return (
-      <button onClick={connect} className="btn btn-gold h-[38px] !px-4">
+      <button onClick={connect} className="btn btn-gold h-[38px] !px-4" aria-label="Connect Wallet">
         <IconWallet size={15} />
         <span className="max-[640px]:hidden">Connect Wallet</span>
       </button>
@@ -207,7 +207,7 @@ function Topbar() {
         {pageTitle(location.pathname)}
       </h1>
 
-      <div className="search-wrap max-[900px]:ml-auto max-[900px]:w-44 max-[640px]:hidden">
+      <div className="search-wrap max-[900px]:w-44 max-[640px]:hidden">
         <IconSearch size={14} className="flex-none text-faint" />
         <input
           ref={searchRef}
@@ -225,7 +225,7 @@ function Topbar() {
         <span className="kbd">⌘K</span>
       </div>
 
-      <div className="ml-auto flex items-center gap-2.5 max-[900px]:ml-0">
+      <div className="ml-auto flex items-center gap-2.5">
         <span className="pill max-[640px]:hidden" title="Estimated network fee (Phase 1 preview)">
           <IconFlame size={11} className="text-gold" />
           <span className="num">{gas}</span>

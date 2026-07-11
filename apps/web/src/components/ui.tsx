@@ -124,12 +124,21 @@ export function Countdown({ target, className = '' }: { target: string; classNam
 
 /* ── Progress bar ─────────────────────────────────────────────────── */
 
-export function ProgressBar({ pct, thin = false }: { pct: number; thin?: boolean }) {
+export function ProgressBar({
+  pct,
+  thin = false,
+  label = 'Progress',
+}: {
+  pct: number;
+  thin?: boolean;
+  label?: string;
+}) {
   const clamped = Math.max(0, Math.min(100, pct));
   return (
     <div
       className={`progress ${thin ? 'progress-thin' : ''}`}
       role="progressbar"
+      aria-label={label}
       aria-valuenow={Math.round(clamped)}
       aria-valuemin={0}
       aria-valuemax={100}

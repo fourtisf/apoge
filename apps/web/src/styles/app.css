@@ -86,6 +86,10 @@ body {
   border-radius: 4px;
 }
 
+/* Component classes live in the components layer so Tailwind utilities
+   (incl. responsive display overrides like max-[640px]:hidden) win. */
+@layer components {
+
 /* Every number in the product is mono + tabular. */
 .num {
   font-family: var(--font-mono);
@@ -774,6 +778,8 @@ body {
   border-color: var(--color-gold-hi);
   box-shadow: 0 0 12px rgba(201, 163, 102, 0.65);
 }
+
+} /* @layer components */
 
 /* ── Reduced motion ───────────────────────────────────────────────── */
 

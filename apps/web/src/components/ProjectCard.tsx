@@ -13,7 +13,7 @@ export function ProjectCard({ project }: { project: Project }) {
   const pct = p.hardCap > 0 ? (p.raised / p.hardCap) * 100 : 0;
 
   return (
-    <Link to={`/sale/${p.slug}`} className="block" aria-label={`${p.name} sale`}>
+    <Link to={`/sale/${p.slug}`} className="block">
       <SpotlightCard className="card flex h-full flex-col gap-3.5 p-5">
         <div className="flex items-start gap-3">
           <LogoTile logo={p.logo} size={42} />
