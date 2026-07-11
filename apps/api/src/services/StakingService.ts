@@ -19,12 +19,13 @@ export async function getStaked(wallet: string): Promise<number> {
 export async function getAccount(wallet: string): Promise<Account | null> {
   const user = await UserModel.findOne({ wallet }).lean();
   if (!user) return null;
-  const staked = await getStaked(wallet);
+  const staked = roundTokens(await getStaked(wallet));
   return {
     wallet: user.wallet,
     chainType: user.chainType,
-    usdcBalance: user.usdcBalance,
-    apgBalance: user.apgBalance,
+    // Repeated $inc updates can accumulate double dust — round at the wire.
+    usdcBalance: roundTokens(user.usdcBalance),
+    apgBalance: roundTokens(user.apgBalance),
     staked,
     tierKey: tierForStake(staked)?.key ?? null,
   };

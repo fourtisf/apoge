@@ -84,5 +84,7 @@ export const ProjectModel = mongoose.model<Project>('Project', projectSchema);
 /** Strip Mongo internals so the wire shape is exactly the shared `Project`. */
 export function serializeProject(doc: ProjectDoc): Project {
   const { _id, ...project } = doc.toObject<Project & { _id: unknown }>();
+  // raised is $inc-mutated by participations — keep the wire value at 2dp.
+  project.raised = Math.round(project.raised * 100) / 100;
   return project as Project;
 }

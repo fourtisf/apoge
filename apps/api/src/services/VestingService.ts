@@ -37,7 +37,10 @@ export function toPositionDTO(
 ): PositionDTO {
   const createdAt = position.createdAt.toISOString();
   const vestedPct = vestedPctFor(project.vesting, createdAt, now);
-  const claimable = claimableTokens(position.tokens, position.claimedTokens, vestedPct);
+  // Repeated $inc updates can accumulate double dust — round at the wire.
+  const tokens = roundTokens(position.tokens);
+  const claimedTokens = roundTokens(position.claimedTokens);
+  const claimable = claimableTokens(tokens, claimedTokens, vestedPct);
   return {
     id: String(position._id),
     wallet: position.wallet,
@@ -46,12 +49,12 @@ export function toPositionDTO(
     ticker: project.ticker,
     chain: project.chain,
     logo: { letter: project.logo.letter, from: project.logo.from, to: project.logo.to },
-    invested: position.invested,
-    tokens: position.tokens,
+    invested: roundUsd(position.invested),
+    tokens,
     price: project.price,
     vestedPct,
     claimableTokens: claimable,
-    claimedTokens: position.claimedTokens,
+    claimedTokens,
     txRef: position.txRef,
     createdAt,
   };
