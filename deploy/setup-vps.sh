@@ -199,7 +199,12 @@ if [[ ! -d "/etc/letsencrypt/live/$DOMAIN" ]]; then
   fi
   ok "HTTPS enabled"
 else
-  ok "Certificate already present — skipping certbot"
+  # The config written above is HTTP-only — reattach the existing cert so a
+  # re-run never leaves the site without its 443 server block.
+  say "Reattaching existing certificate to the fresh nginx config…"
+  certbot install --nginx --cert-name "$DOMAIN" --redirect -n \
+    || certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --redirect --reinstall -n --agree-tos --register-unsafely-without-email
+  ok "HTTPS re-enabled with the existing certificate"
 fi
 
 # ── 6 · Ops: log rotation + nightly backup ───────────────────────────
