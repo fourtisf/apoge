@@ -1,0 +1,88 @@
+import type {
+  Account,
+  ActivityEventDTO,
+  ChainType,
+  PortfolioSummary,
+  PositionDTO,
+  Project,
+  StatsDTO,
+} from '@apogee/shared';
+import { useSession } from '../state/store';
+
+export class ApiError extends Error {
+  code: string;
+  status: number;
+  constructor(status: number, code: string, message: string) {
+    super(message);
+    this.code = code;
+    this.status = status;
+  }
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = useSession.getState().token;
+  const res = await fetch(`/api${path}`, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...init?.headers,
+    },
+  });
+  if (!res.ok) {
+    let code = 'UNKNOWN';
+    let message = `Request failed (${res.status})`;
+    try {
+      const body = await res.json();
+      code = body?.error?.code ?? code;
+      message = body?.error?.message ?? message;
+    } catch {
+      /* non-JSON error body */
+    }
+    if (res.status === 401) useSession.getState().clear();
+    throw new ApiError(res.status, code, message);
+  }
+  return res.json() as Promise<T>;
+}
+
+const get = <T>(path: string) => request<T>(path);
+const post = <T>(path: string, body?: unknown) =>
+  request<T>(path, { method: 'POST', body: body === undefined ? undefined : JSON.stringify(body) });
+
+export interface ProjectFilters {
+  status?: string;
+  chain?: string;
+}
+
+export const api = {
+  projects: (f: ProjectFilters = {}) => {
+    const q = new URLSearchParams();
+    if (f.status) q.set('status', f.status);
+    if (f.chain) q.set('chain', f.chain);
+    const qs = q.toString();
+    return get<{ projects: Project[] }>(`/projects${qs ? `?${qs}` : ''}`);
+  },
+  project: (slug: string) => get<{ project: Project }>(`/projects/${slug}`),
+  stats: () => get<{ stats: StatsDTO }>('/stats'),
+  activity: () => get<{ events: ActivityEventDTO[] }>('/activity'),
+  account: (wallet: string) => get<{ account: Account }>(`/account/${wallet}`),
+  portfolio: (wallet: string) =>
+    get<{ positions: PositionDTO[]; summary: PortfolioSummary }>(`/portfolio/${wallet}`),
+
+  nonce: (wallet: string, chainType: ChainType) =>
+    get<{ nonce: string; message: string }>(
+      `/auth/nonce?wallet=${encodeURIComponent(wallet)}&chainType=${chainType}`,
+    ),
+  verify: (wallet: string, chainType: ChainType, signature: string) =>
+    post<{ token: string; account: Account }>('/auth/verify', { wallet, chainType, signature }),
+
+  participate: (slug: string, amountUsd: number) =>
+    post<{ position: PositionDTO; account: Account; sale: { slug: string; raised: number; participants: number } }>(
+      `/sales/${slug}/participate`,
+      { amountUsd },
+    ),
+  stake: (amount: number) => post<{ account: Account }>('/staking/stake', { amount }),
+  unstake: (amount: number) => post<{ account: Account }>('/staking/unstake', { amount }),
+  claim: (positionId: string) =>
+    post<{ position: PositionDTO; claimedTokens: number }>(`/positions/${positionId}/claim`),
+};
