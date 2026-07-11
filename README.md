@@ -83,7 +83,20 @@ socket event. Highlights:
 - `POST /api/staking/stake|unstake` · `GET /api/portfolio/:wallet` · `POST /api/positions/:id/claim`
 - All POST routes rate-limited; all input Zod-validated. The client is never trusted.
 
-## Deploying (Ubuntu VPS · PM2 · Nginx · Cloudflare)
+## One-command VPS deploy
+
+On a fresh Ubuntu VPS (as root), with your domain's A record already pointing at the server:
+
+```bash
+git clone -b claude/new-session-sragu8 https://github.com/fourtisf/launchpad.git /srv/apogee
+cd /srv/apogee && DOMAIN=apoge.fun bash deploy/setup-vps.sh
+```
+
+`deploy/setup-vps.sh` installs Node 22 + pm2 + MongoDB + nginx + certbot, retires the previous
+pm2 app (with confirmation before deleting its files), builds, seeds, starts the API under pm2,
+configures nginx for the domain, and issues the Let's Encrypt cert. Re-running it is safe.
+
+## Deploying manually (Ubuntu VPS · PM2 · Nginx · Cloudflare)
 
 ```bash
 # 1 · System
