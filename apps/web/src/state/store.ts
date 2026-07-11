@@ -70,11 +70,21 @@ interface UiState {
   /** Topbar search query — filters the launchpad grid. */
   search: string;
   setSearch: (search: string) => void;
+  /** True once something needs the heavy wallet SDK stack (lazy-loaded). */
+  walletStackRequested: boolean;
+  requestWalletStack: () => void;
 }
 
 export const useUi = create<UiState>((set) => ({
   connectOpen: false,
-  setConnectOpen: (connectOpen) => set({ connectOpen }),
+  setConnectOpen: (connectOpen) =>
+    set((s) => ({
+      connectOpen,
+      /* Opening the modal preloads the wallet stack so provider clicks are instant. */
+      walletStackRequested: s.walletStackRequested || connectOpen,
+    })),
   search: '',
   setSearch: (search) => set({ search }),
+  walletStackRequested: false,
+  requestWalletStack: () => set({ walletStackRequested: true }),
 }));

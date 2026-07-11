@@ -1,7 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useUi } from '../state/store';
 import { DEMO_WALLET_ENABLED, useWallet, type ProviderKind } from '../wallet/useWallet';
-import { hasWalletConnect } from '../wallet/wagmi';
 import { IconX } from './icons';
 
 interface ProviderRow {
@@ -13,10 +12,13 @@ interface ProviderRow {
   show: boolean;
 }
 
+const HAS_WALLETCONNECT = Boolean(import.meta.env.VITE_WALLETCONNECT_PROJECT_ID);
+
 export function ConnectModal() {
   const open = useUi((s) => s.connectOpen);
   const setOpen = useUi((s) => s.setConnectOpen);
-  const { connectProvider } = useWallet();
+  const { connectProvider, account } = useWallet();
+  const [busy, setBusy] = useState<ProviderKind | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -27,15 +29,35 @@ export function ConnectModal() {
     return () => window.removeEventListener('keydown', onKey);
   }, [open, setOpen]);
 
+  /* Close once a session lands (auto sign-in finished). */
+  useEffect(() => {
+    if (open && account) {
+      setOpen(false);
+      setBusy(null);
+    }
+  }, [open, account, setOpen]);
+
   if (!open) return null;
 
   const providers: ProviderRow[] = [
     { kind: 'phantom', name: 'Phantom', hint: 'Solana', letter: 'P', color: '#9945FF', show: true },
     { kind: 'metamask', name: 'MetaMask', hint: 'Ethereum · Base · BNB', letter: 'M', color: '#F6851B', show: true },
     { kind: 'coinbase', name: 'Coinbase Wallet', hint: 'Ethereum · Base', letter: 'C', color: '#3773F5', show: true },
-    { kind: 'walletconnect', name: 'WalletConnect', hint: 'Any EVM wallet', letter: 'W', color: '#3B99FC', show: hasWalletConnect },
+    { kind: 'walletconnect', name: 'WalletConnect', hint: 'Any EVM wallet', letter: 'W', color: '#3B99FC', show: HAS_WALLETCONNECT },
     { kind: 'demo', name: 'Demo wallet', hint: 'Local preview · no extension needed', letter: 'D', color: '#C9A366', show: DEMO_WALLET_ENABLED },
   ];
+
+  const pick = async (kind: ProviderKind) => {
+    if (busy) return;
+    setBusy(kind);
+    try {
+      await connectProvider(kind);
+    } catch {
+      /* toasts handled downstream */
+    } finally {
+      setBusy(null);
+    }
+  };
 
   return (
     <>
@@ -68,8 +90,9 @@ export function ConnectModal() {
             .map((p) => (
               <button
                 key={p.kind}
-                onClick={() => void connectProvider(p.kind)}
-                className="group flex items-center gap-3.5 rounded-xl border border-line bg-panel2 px-4 py-3 text-left transition-all duration-300 hover:border-gold/40 hover:bg-panel3"
+                onClick={() => void pick(p.kind)}
+                disabled={busy !== null}
+                className="group flex items-center gap-3.5 rounded-xl border border-line bg-panel2 px-4 py-3 text-left transition-all duration-300 hover:border-gold/40 hover:bg-panel3 disabled:opacity-60"
               >
                 <span
                   className="flex h-9 w-9 flex-none items-center justify-center rounded-[10px] text-[15px] font-bold text-[#0A0B0E]"
@@ -77,10 +100,11 @@ export function ConnectModal() {
                 >
                   {p.letter}
                 </span>
-                <span className="min-w-0">
+                <span className="min-w-0 flex-1">
                   <span className="block text-[13.5px] font-semibold text-ivory">{p.name}</span>
                   <span className="block text-[11.5px] text-faint">{p.hint}</span>
                 </span>
+                {busy === p.kind && <span className="spinner spinner-gold" />}
               </button>
             ))}
         </div>
