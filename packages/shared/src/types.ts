@@ -167,6 +167,8 @@ export interface SaleProgressEvent {
 export const SOCKET_EVENTS = {
   activityNew: 'activity:new',
   saleProgress: 'sale:progress',
+  /** A sale's status flipped (scheduler or admin) — clients refetch lists. */
+  projectsChanged: 'projects:changed',
 } as const;
 
 export const CHAIN_META: Record<Chain, { label: string; color: string }> = {

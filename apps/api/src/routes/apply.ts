@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { asyncHandler } from '../lib/asyncHandler';
+import { notifyOps } from '../lib/notify';
 import { applyLimiter } from '../middleware/rateLimit';
 import { ApplicationModel, toApplicationDTO } from '../models/Application';
 
@@ -22,6 +23,9 @@ applyRouter.post(
   asyncHandler(async (req, res) => {
     const input = applySchema.parse(req.body);
     const doc = await ApplicationModel.create(input);
+    notifyOps(
+      `📬 New launch application: <b>${input.projectName}</b> (${input.ticker} · ${input.chain})\n${input.website}`,
+    );
     res.status(201).json({ application: toApplicationDTO(doc) });
   }),
 );

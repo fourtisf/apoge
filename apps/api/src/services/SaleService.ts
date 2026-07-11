@@ -16,7 +16,9 @@ import {
   type StatsDTO,
 } from '@apogee/shared';
 import type { FilterQuery } from 'mongoose';
+import { truncAddr } from '@apogee/shared';
 import { ApiError } from '../lib/errors';
+import { notifyOps } from '../lib/notify';
 import { roundTokens, roundUsd } from '../lib/round';
 import { PositionModel, type PositionDoc } from '../models/Position';
 import { ProjectModel, serializeProject, type ProjectDoc } from '../models/Project';
@@ -238,6 +240,13 @@ export async function participate(
   };
   emitSaleProgress(sale);
   emitActivity(activity);
+
+  // Ops heads-up for whale-sized buys (no-op unless Telegram env is set).
+  if (amountUsd >= 1_000) {
+    notifyOps(
+      `💰 ${truncAddr(wallet)} bought $${amountUsd.toLocaleString('en-US')} of ${updatedProject.ticker} — $${Math.round(sale.raised).toLocaleString('en-US')} / $${Math.round(project.hardCap).toLocaleString('en-US')}`,
+    );
+  }
 
   return {
     position: toPositionDTO(positionDoc, updatedProject),

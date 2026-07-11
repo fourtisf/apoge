@@ -6,6 +6,7 @@ import { SOCKET_EVENTS, type ActivityEventDTO, type SaleProgressEvent } from '@a
 interface ServerToClientEvents {
   [SOCKET_EVENTS.activityNew]: (event: ActivityEventDTO) => void;
   [SOCKET_EVENTS.saleProgress]: (progress: SaleProgressEvent) => void;
+  [SOCKET_EVENTS.projectsChanged]: () => void;
 }
 
 let io: Server<Record<string, never>, ServerToClientEvents> | null = null;
@@ -27,4 +28,9 @@ export function emitSaleProgress(progress: SaleProgressEvent): void {
 /** Broadcast `activity:new` to all connected clients. */
 export function emitActivity(event: ActivityEventDTO): void {
   io?.emit(SOCKET_EVENTS.activityNew, event);
+}
+
+/** Tell every client that sale statuses changed — they refetch project lists. */
+export function emitProjectsChanged(): void {
+  io?.emit(SOCKET_EVENTS.projectsChanged);
 }

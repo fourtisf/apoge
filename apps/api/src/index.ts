@@ -7,6 +7,7 @@ import { env } from './env';
 import { errorHandler, notFoundHandler } from './middleware/errors';
 import { postLimiter } from './middleware/rateLimit';
 import { initRealtime } from './realtime';
+import { startSaleScheduler } from './services/SaleScheduler';
 import { activityRouter } from './routes/activity';
 import { adminRouter } from './routes/admin';
 import { applyRouter } from './routes/apply';
@@ -58,6 +59,7 @@ async function main(): Promise<void> {
 
   const server = http.createServer(app);
   initRealtime(server);
+  startSaleScheduler();
 
   server.listen(env.PORT, () => {
     console.log(`[api] Apogee API listening on http://localhost:${env.PORT}`);

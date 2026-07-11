@@ -28,6 +28,9 @@ export interface Env {
   readonly DEMO_MODE: boolean;
   /** Password for /admin. Unset = admin panel disabled. */
   readonly ADMIN_PASSWORD: string | undefined;
+  /** Telegram ops notifications — both unset = notifications off. */
+  readonly TELEGRAM_BOT_TOKEN: string | undefined;
+  readonly TELEGRAM_CHAT_ID: string | undefined;
   /** Public origin used in sitemap/canonical URLs. */
   readonly PUBLIC_ORIGIN: string;
   /** Absolute path of the monorepo root. */
@@ -63,6 +66,8 @@ export const env: Env = {
   JWT_SECRET: jwtSecret ?? DEV_JWT_SECRET,
   DEMO_MODE: process.env.DEMO_MODE === '1' || process.env.DEMO_MODE === 'true',
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || undefined,
+  TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || undefined,
+  TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID || undefined,
   PUBLIC_ORIGIN: process.env.PUBLIC_ORIGIN || 'https://apoge.fun',
   REPO_ROOT: repoRoot,
 };

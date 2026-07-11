@@ -183,6 +183,17 @@ The deploy script wires these up automatically:
   `https://apoge.fun/api/health`, and [Sentry](https://sentry.io) if you want error tracking
   (add the SDK to `apps/api/src/index.ts` + `apps/web/src/main.tsx` with your DSN).
 
+## Automatic sale windows & Telegram alerts
+
+Sale statuses flip themselves — `upcoming → live` at `startAt`, `live → ended` at `endAt`
+(featured pin cleared) — via a one-minute scheduler in the API; every open browser refreshes
+through the `projects:changed` socket event.
+
+Optional Telegram ops alerts (new launch applications, buys ≥ $1,000, sales opening/closing):
+create a bot with [@BotFather](https://t.me/BotFather), add it to a private group, find the
+chat id via `https://api.telegram.org/bot<TOKEN>/getUpdates`, then set `TELEGRAM_BOT_TOKEN`
+and `TELEGRAM_CHAT_ID` in `.env` and restart the API. Unset = silently off.
+
 ## Mobile wallets (WalletConnect)
 
 Browser-extension wallets don't exist on phones, so mobile users need WalletConnect:

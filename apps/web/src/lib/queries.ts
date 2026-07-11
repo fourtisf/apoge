@@ -142,13 +142,22 @@ export function useRealtime() {
       qc.invalidateQueries({ queryKey: ['activity'] });
     };
 
+    // Sale windows opened/closed server-side — refetch everything status-shaped.
+    const onProjectsChanged = () => {
+      qc.invalidateQueries({ queryKey: ['projects'] });
+      qc.invalidateQueries({ queryKey: ['project'] });
+      qc.invalidateQueries({ queryKey: ['stats'] });
+    };
+
     socket.on('connect', onConnect);
     socket.on(SOCKET_EVENTS.activityNew, onActivity);
     socket.on(SOCKET_EVENTS.saleProgress, onProgress);
+    socket.on(SOCKET_EVENTS.projectsChanged, onProjectsChanged);
     return () => {
       socket.off('connect', onConnect);
       socket.off(SOCKET_EVENTS.activityNew, onActivity);
       socket.off(SOCKET_EVENTS.saleProgress, onProgress);
+      socket.off(SOCKET_EVENTS.projectsChanged, onProjectsChanged);
     };
   }, [qc]);
 }
