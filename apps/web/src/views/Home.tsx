@@ -70,8 +70,11 @@ export function Home() {
   const { data: projects, isLoading, isError, refetch } = useProjects();
 
   const featured = useMemo(() => {
-    const live = (projects ?? []).filter((p) => p.status === 'live' && p.endAt);
-    return live.sort((a, b) => new Date(a.endAt!).getTime() - new Date(b.endAt!).getTime())[0];
+    const live = (projects ?? [])
+      .filter((p) => p.status === 'live' && p.endAt)
+      .sort((a, b) => new Date(a.endAt!).getTime() - new Date(b.endAt!).getTime());
+    // Admin-pinned launch wins; otherwise the live sale ending soonest.
+    return live.find((p) => p.featured) ?? live[0];
   }, [projects]);
 
   const filtered = useMemo(() => {

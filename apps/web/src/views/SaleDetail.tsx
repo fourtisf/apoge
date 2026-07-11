@@ -52,12 +52,25 @@ function SaleHeader({ p }: { p: Project }) {
             <StatusPill status={p.status} />
             <ChainPill chain={p.chain} />
             <span className="pill">{p.sector}</span>
-            {p.audited && (
-              <span className="pill !text-mint" style={{ borderColor: 'rgba(61,214,140,.25)' }}>
-                <IconCheck size={10} />
-                Audited
-              </span>
-            )}
+            {p.audited &&
+              (p.auditUrl ? (
+                <a
+                  href={p.auditUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="pill !text-mint transition-colors hover:!text-ivory"
+                  style={{ borderColor: 'rgba(61,214,140,.25)' }}
+                  title="Open audit report"
+                >
+                  <IconCheck size={10} />
+                  Audited ↗
+                </a>
+              ) : (
+                <span className="pill !text-mint" style={{ borderColor: 'rgba(61,214,140,.25)' }}>
+                  <IconCheck size={10} />
+                  Audited
+                </span>
+              ))}
             {p.kycTeam && (
               <span className="pill !text-mint" style={{ borderColor: 'rgba(61,214,140,.25)' }}>
                 <IconCheck size={10} />

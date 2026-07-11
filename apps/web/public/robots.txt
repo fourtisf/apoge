@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /portfolio
+
+Sitemap: https://apoge.fun/sitemap.xml

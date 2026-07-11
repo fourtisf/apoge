@@ -274,6 +274,13 @@ export function BuyPanel({ project }: { project: Project }) {
 
         {validation && <p className="mt-2 text-[11.5px] text-red">{validation}</p>}
 
+        {tier.key === 'ignition' && (
+          <p className="mt-2.5 rounded-lg border border-gold/20 bg-gold/5 px-3 py-2 text-[11px] leading-relaxed text-muted">
+            <span className="text-gold">IGNITION is lottery-based:</span> buys enter the
+            allocation draw at sale close. Stake 10,000+ APG for guaranteed allocation.
+          </p>
+        )}
+
         <div className="mt-3 border-t border-line pt-1">
           <div className="kv !py-2">
             <span className="k text-[11.5px]">

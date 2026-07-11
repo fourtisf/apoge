@@ -165,6 +165,31 @@ Deploy updates:
 cd /srv/apogee && git pull && npm install && npm run build && pm2 restart apogee-api
 ```
 
+## Admin panel
+
+`/admin` (linked in the footer) manages projects without touching the seed: create/edit/delete
+launches, pin the featured hero, set audit-report links, and read "Apply for Launch"
+submissions. It's enabled by setting `ADMIN_PASSWORD` in `.env` — the deploy script generates
+one on first run and prints it. Deleting a sale that wallets hold positions in is blocked.
+
+## Operations
+
+The deploy script wires these up automatically:
+
+- **Nightly DB backup** — `deploy/backup-mongo.sh` via `/etc/cron.d/apogee-backup`
+  (03:15, 7-day retention, restore command documented inside the script).
+- **pm2 log rotation** — `pm2-logrotate`, 10 MB per file, 14 files retained.
+- **Recommended, one-time manual setup:** an [UptimeRobot](https://uptimerobot.com) monitor on
+  `https://apoge.fun/api/health`, and [Sentry](https://sentry.io) if you want error tracking
+  (add the SDK to `apps/api/src/index.ts` + `apps/web/src/main.tsx` with your DSN).
+
+## Mobile wallets (WalletConnect)
+
+Browser-extension wallets don't exist on phones, so mobile users need WalletConnect:
+get a free project id at [cloud.reown.com](https://cloud.reown.com), set
+`VITE_WALLETCONNECT_PROJECT_ID` in the root `.env`, rebuild (`npm run build`), and the
+WalletConnect option appears in the connect modal automatically.
+
 ## Phase roadmap
 
 - **Phase 1 (this repo)** — real wallet connections + signature auth, off-chain accounting,

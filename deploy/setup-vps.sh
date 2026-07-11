@@ -83,13 +83,17 @@ cd "$APP_DIR"
 say "npm install (workspace penuh)…"
 npm install --no-audit --no-fund >/dev/null
 
+GENERATED_ADMIN_PASSWORD=""
 if [[ ! -f .env ]]; then
   say "Menulis .env produksi…"
+  GENERATED_ADMIN_PASSWORD="$(openssl rand -base64 18 | tr -d '/+=')"
   cat > .env <<EOF
 MONGO_URI=mongodb://127.0.0.1:27017/apogee
 PORT=$API_PORT
 JWT_SECRET=$(openssl rand -hex 32)
 DEMO_MODE=0
+ADMIN_PASSWORD=$GENERATED_ADMIN_PASSWORD
+PUBLIC_ORIGIN=https://$DOMAIN
 RPC_SOLANA=https://api.mainnet-beta.solana.com
 RPC_ETH=https://eth.llamarpc.com
 RPC_BASE=https://mainnet.base.org
@@ -98,6 +102,12 @@ EOF
   ok ".env dibuat (JWT_SECRET acak, DEMO_MODE=0)"
 else
   ok ".env sudah ada — tidak diubah"
+  if ! grep -q '^ADMIN_PASSWORD=' .env; then
+    GENERATED_ADMIN_PASSWORD="$(openssl rand -base64 18 | tr -d '/+=')"
+    echo "ADMIN_PASSWORD=$GENERATED_ADMIN_PASSWORD" >> .env
+    ok "ADMIN_PASSWORD ditambahkan ke .env"
+  fi
+  grep -q '^PUBLIC_ORIGIN=' .env || echo "PUBLIC_ORIGIN=https://$DOMAIN" >> .env
 fi
 
 say "Build web + typecheck API…"
@@ -157,6 +167,12 @@ server {
         proxy_set_header Connection "upgrade";
         proxy_set_header Host \$host;
     }
+
+    # Dynamic sitemap served by the API.
+    location = /sitemap.xml {
+        proxy_pass http://127.0.0.1:$API_PORT;
+        proxy_set_header Host \$host;
+    }
 }
 EOF
 ln -sf "/etc/nginx/sites-available/$DOMAIN" "/etc/nginx/sites-enabled/$DOMAIN"
@@ -182,9 +198,30 @@ else
   ok "Sertifikat sudah ada — lewati certbot"
 fi
 
+# ── 6 · Ops: log rotation + backup harian ────────────────────────────
+say "Mengaktifkan rotasi log pm2 + backup MongoDB harian…"
+pm2 install pm2-logrotate >/dev/null 2>&1 || true
+pm2 set pm2-logrotate:max_size 10M >/dev/null 2>&1 || true
+pm2 set pm2-logrotate:retain 14 >/dev/null 2>&1 || true
+
+chmod +x "$APP_DIR/deploy/backup-mongo.sh"
+cat > /etc/cron.d/apogee-backup <<EOF
+# Nightly Apogee MongoDB backup (03:15), 7-day retention.
+15 3 * * * root $APP_DIR/deploy/backup-mongo.sh >> /var/log/apogee-backup.log 2>&1
+EOF
+chmod 644 /etc/cron.d/apogee-backup
+ok "Backup harian 03:15 → /var/backups/apogee (retensi 7 hari)"
+
 echo
 ok "SELESAI → https://$DOMAIN"
 echo "  Cek cepat:"
 echo "    curl -s https://$DOMAIN/api/health"
 echo "    pm2 status · pm2 logs apogee-api"
+if [[ -n "$GENERATED_ADMIN_PASSWORD" ]]; then
+  echo
+  echo "  ┌──────────────────────────────────────────────────────────┐"
+  echo "    PASSWORD ADMIN (https://$DOMAIN/admin) — simpan sekarang:"
+  echo "    $GENERATED_ADMIN_PASSWORD"
+  echo "  └──────────────────────────────────────────────────────────┘"
+fi
 echo "  Update berikutnya: cd $APP_DIR && git pull && npm install && npm run build && pm2 restart apogee-api"

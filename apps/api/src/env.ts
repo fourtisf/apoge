@@ -26,6 +26,10 @@ export interface Env {
   readonly JWT_SECRET: string;
   /** DEMO_MODE=1 lets `signature: "demo"` bypass signature verification (local dev only). */
   readonly DEMO_MODE: boolean;
+  /** Password for /admin. Unset = admin panel disabled. */
+  readonly ADMIN_PASSWORD: string | undefined;
+  /** Public origin used in sitemap/canonical URLs. */
+  readonly PUBLIC_ORIGIN: string;
   /** Absolute path of the monorepo root. */
   readonly REPO_ROOT: string;
 }
@@ -58,5 +62,7 @@ export const env: Env = {
   MONGO_URI: process.env.MONGO_URI || undefined,
   JWT_SECRET: jwtSecret ?? DEV_JWT_SECRET,
   DEMO_MODE: process.env.DEMO_MODE === '1' || process.env.DEMO_MODE === 'true',
+  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || undefined,
+  PUBLIC_ORIGIN: process.env.PUBLIC_ORIGIN || 'https://apoge.fun',
   REPO_ROOT: repoRoot,
 };

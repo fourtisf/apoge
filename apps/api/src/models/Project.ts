@@ -69,6 +69,8 @@ const projectSchema = new Schema<Project>(
     participants: { type: Number, required: true, default: 0 },
     audited: { type: Boolean, required: true },
     kycTeam: { type: Boolean, required: true },
+    auditUrl: { type: String },
+    featured: { type: Boolean },
     // Post-listing performance — only present for ended sales.
     roi: { type: Number },
     ath: { type: Number },

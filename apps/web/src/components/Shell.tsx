@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { fmtNum, truncAddr } from '@apogee/shared';
 import { useGasPill } from '../lib/useGasPill';
 import { useUi } from '../state/store';
@@ -18,6 +18,7 @@ import {
   IconRocket,
   IconSearch,
   IconWallet,
+  IconX,
 } from './icons';
 
 const NAV = [
@@ -30,6 +31,10 @@ function pageTitle(pathname: string): string {
   if (pathname.startsWith('/sale/')) return 'Sale';
   if (pathname.startsWith('/staking')) return 'Staking';
   if (pathname.startsWith('/portfolio')) return 'Portfolio';
+  if (pathname.startsWith('/admin')) return 'Admin';
+  if (pathname.startsWith('/apply')) return 'Apply';
+  if (pathname.startsWith('/how-it-works')) return 'Guide';
+  if (/^\/(terms|privacy|risk)/.test(pathname)) return 'Legal';
   return 'Launchpad';
 }
 
@@ -240,6 +245,66 @@ function Topbar() {
   );
 }
 
+/* ── Phase 1 banner ───────────────────────────────────────────────── */
+
+const BANNER_KEY = 'apogee-p1-banner-dismissed';
+
+function PhaseBanner() {
+  const [dismissed, setDismissed] = useState(() => localStorage.getItem(BANNER_KEY) === '1');
+  if (dismissed) return null;
+  return (
+    <div className="flex items-center justify-center gap-3 border-b border-gold/20 bg-gold/10 px-4 py-2 text-center">
+      <p className="text-[11.5px] text-gold-hi">
+        <span className="font-semibold">Phase 1 preview</span> — balances, staking and purchases
+        are simulated off-chain. No real funds are involved.{' '}
+        <Link to="/how-it-works" className="underline underline-offset-2 hover:text-ivory">
+          Learn more
+        </Link>
+      </p>
+      <button
+        onClick={() => {
+          localStorage.setItem(BANNER_KEY, '1');
+          setDismissed(true);
+        }}
+        className="text-gold transition-colors hover:text-ivory"
+        aria-label="Dismiss notice"
+      >
+        <IconX size={13} />
+      </button>
+    </div>
+  );
+}
+
+/* ── Footer ───────────────────────────────────────────────────────── */
+
+const FOOTER_LINKS = [
+  { to: '/how-it-works', label: 'How it works' },
+  { to: '/apply', label: 'Apply for Launch' },
+  { to: '/terms', label: 'Terms' },
+  { to: '/privacy', label: 'Privacy' },
+  { to: '/risk', label: 'Risk' },
+  { to: '/admin', label: 'Admin' },
+];
+
+function Footer() {
+  return (
+    <footer className="mx-auto max-w-[1280px] px-6 pb-10 max-[900px]:pb-24 max-[640px]:px-4">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line pt-5">
+        {FOOTER_LINKS.map((l) => (
+          <Link
+            key={l.to}
+            to={l.to}
+            className="text-[11.5px] text-faint transition-colors hover:text-ivory"
+          >
+            {l.label}
+          </Link>
+        ))}
+        <span className="label ml-auto !text-[9.5px]">© 2026 Apogee · Phase 1 preview</span>
+      </div>
+    </footer>
+  );
+}
+
 /* ── Mobile bottom nav ────────────────────────────────────────────── */
 
 function MobileNav() {
@@ -272,10 +337,12 @@ export function Shell() {
     <div className="min-h-screen">
       <Sidebar />
       <div className="ml-[264px] max-[900px]:ml-0">
+        <PhaseBanner />
         <Topbar />
-        <main className="mx-auto max-w-[1280px] px-6 py-7 pb-16 max-[900px]:pb-24 max-[640px]:px-4">
+        <main className="mx-auto min-h-[70vh] max-w-[1280px] px-6 py-7 pb-16 max-[640px]:px-4">
           <Outlet />
         </main>
+        <Footer />
       </div>
       <MobileNav />
       <ConnectModal />

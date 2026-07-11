@@ -8,11 +8,14 @@ import { errorHandler, notFoundHandler } from './middleware/errors';
 import { postLimiter } from './middleware/rateLimit';
 import { initRealtime } from './realtime';
 import { activityRouter } from './routes/activity';
+import { adminRouter } from './routes/admin';
+import { applyRouter } from './routes/apply';
 import { authRouter } from './routes/auth';
 import { portfolioRouter } from './routes/portfolio';
 import { positionsRouter } from './routes/positions';
 import { projectsRouter } from './routes/projects';
 import { salesRouter } from './routes/sales';
+import { sitemapRouter } from './routes/sitemap';
 import { stakingRouter } from './routes/staking';
 import { statsRouter } from './routes/stats';
 
@@ -39,6 +42,9 @@ async function main(): Promise<void> {
   });
 
   app.use('/api/auth', authRouter);
+  app.use('/api/admin', adminRouter);
+  app.use('/api/apply', applyRouter);
+  app.use('/sitemap.xml', sitemapRouter);
   app.use('/api/projects', projectsRouter);
   app.use('/api/stats', statsRouter);
   app.use('/api/activity', activityRouter);

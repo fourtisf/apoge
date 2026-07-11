@@ -68,10 +68,26 @@ export interface Project {
   participants: number;
   audited: boolean;
   kycTeam: boolean;
+  /** Link to the published audit report, when available. */
+  auditUrl?: string;
+  /** Admin-pinned featured launch (falls back to live sale ending soonest). */
+  featured?: boolean;
   /** Post-listing performance — only for ended sales. */
   roi?: number;
   ath?: number;
   cex?: string[];
+}
+
+/** "Apply for launch" submission from a project team. */
+export interface ApplicationDTO {
+  id: string;
+  projectName: string;
+  ticker: string;
+  chain: Chain;
+  website: string;
+  contactEmail: string;
+  pitch: string;
+  ts: string;
 }
 
 export interface Account {

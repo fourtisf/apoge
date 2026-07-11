@@ -34,3 +34,21 @@ export const nonceLimiter = rateLimit({
   legacyHeaders: false,
   message: rateLimitBody('Too many nonce requests — try again in a minute'),
 });
+
+/** Launch applications: 5/min per IP keeps the inbox spam-resistant. */
+export const applyLimiter = rateLimit({
+  windowMs: 60_000,
+  limit: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: rateLimitBody('Too many applications — try again in a minute'),
+});
+
+/** Admin login: 10/min per IP against password guessing. */
+export const adminLoginLimiter = rateLimit({
+  windowMs: 60_000,
+  limit: 10,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: rateLimitBody('Too many login attempts — try again in a minute'),
+});

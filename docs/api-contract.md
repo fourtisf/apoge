@@ -88,6 +88,27 @@ Position must belong to the JWT wallet; `claimableTokens > 0` — else 400 `NOTH
 Adds claimable to `claimedTokens` (Phase 1 book-keeping; Phase 3 will transfer real tokens).
 → `{ position: PositionDTO, claimedTokens: number }`.
 
+## Launch applications & admin
+
+### `POST /api/apply` `{ projectName, ticker, chain, website, contactEmail, pitch }`
+Public intake for the "Apply for Launch" form. Zod-validated, 5/min per IP.
+→ `{ application: ApplicationDTO }`.
+
+### `POST /api/admin/login` `{ password }`
+Compares against `ADMIN_PASSWORD` (timing-safe; 503 `ADMIN_DISABLED` when unset,
+10/min per IP). → `{ token }` — a 4h JWT with `role: "admin"`.
+
+### Admin-JWT-guarded (`Authorization: Bearer <admin token>`)
+- `GET /api/admin/projects` → `{ projects: Project[] }`
+- `POST /api/admin/projects` `{ ...full project }` → 201 `{ project }` (409 `SLUG_TAKEN`)
+- `PUT /api/admin/projects/:slug` → `{ project }` — tokenomics must sum to 100
+- `DELETE /api/admin/projects/:slug` → 409 `HAS_POSITIONS` if any wallet holds a position
+- `GET /api/admin/applications` → `{ applications: ApplicationDTO[] }` (newest first)
+
+### `GET /sitemap.xml`
+Dynamic sitemap (core routes + every sale page) built from `PUBLIC_ORIGIN`.
+Nginx proxies this path to the API.
+
 ## Socket.io
 
 Server namespace `/`, path `/socket.io`. Events broadcast to all clients:

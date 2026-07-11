@@ -1,6 +1,8 @@
 import type {
   Account,
   ActivityEventDTO,
+  ApplicationDTO,
+  Chain,
   ChainType,
   PortfolioSummary,
   PositionDTO,
@@ -19,8 +21,8 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = useSession.getState().token;
+async function request<T>(path: string, init?: RequestInit, tokenOverride?: string): Promise<T> {
+  const token = tokenOverride ?? useSession.getState().token;
   const res = await fetch(`/api${path}`, {
     ...init,
     headers: {
@@ -39,7 +41,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     } catch {
       /* non-JSON error body */
     }
-    if (res.status === 401) useSession.getState().clear();
+    // A 401 on a *user* call invalidates the wallet session. Admin calls
+    // (tokenOverride) manage their own token lifecycle.
+    if (res.status === 401 && tokenOverride === undefined) useSession.getState().clear();
     throw new ApiError(res.status, code, message);
   }
   return res.json() as Promise<T>;
@@ -85,4 +89,41 @@ export const api = {
   unstake: (amount: number) => post<{ account: Account }>('/staking/unstake', { amount }),
   claim: (positionId: string) =>
     post<{ position: PositionDTO; claimedTokens: number }>(`/positions/${positionId}/claim`),
+
+  apply: (input: {
+    projectName: string;
+    ticker: string;
+    chain: Chain;
+    website: string;
+    contactEmail: string;
+    pitch: string;
+  }) => post<{ application: ApplicationDTO }>('/apply', input),
+};
+
+/** Everything a project row needs when sent to the admin CRUD endpoints. */
+export type AdminProjectInput = Omit<Project, 'raised' | 'participants'> & {
+  raised: number;
+  participants: number;
+};
+
+export const adminApi = {
+  login: (password: string) => post<{ token: string }>('/admin/login', { password }),
+  projects: (token: string) =>
+    request<{ projects: Project[] }>('/admin/projects', undefined, token),
+  createProject: (token: string, input: AdminProjectInput) =>
+    request<{ project: Project }>(
+      '/admin/projects',
+      { method: 'POST', body: JSON.stringify(input) },
+      token,
+    ),
+  updateProject: (token: string, slug: string, input: AdminProjectInput) =>
+    request<{ project: Project }>(
+      `/admin/projects/${slug}`,
+      { method: 'PUT', body: JSON.stringify(input) },
+      token,
+    ),
+  deleteProject: (token: string, slug: string) =>
+    request<{ deleted: string }>(`/admin/projects/${slug}`, { method: 'DELETE' }, token),
+  applications: (token: string) =>
+    request<{ applications: ApplicationDTO[] }>('/admin/applications', undefined, token),
 };
