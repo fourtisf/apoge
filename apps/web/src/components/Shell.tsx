@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { fmtNum, truncAddr } from '@apogee/shared';
 import { useGasPill } from '../lib/useGasPill';
 import { useUi } from '../state/store';
@@ -210,6 +211,27 @@ function WalletButton() {
   );
 }
 
+/** "$APG CA: SOON" in the topbar — flips to LIVE once the token deploys
+ *  (onchain config carries an APG address). Links to the token page. */
+function CaPill() {
+  const { data } = useQuery({
+    queryKey: ['onchain-config'],
+    queryFn: async () => {
+      const res = await fetch('/api/onchain/config');
+      return (await res.json()) as { chains: Record<string, { apg?: string }> };
+    },
+    staleTime: 5 * 60_000,
+    retry: 1,
+  });
+  const live = Object.values(data?.chains ?? {}).some((c) => c.apg);
+  return (
+    <Link to="/token" className="pill pill-upcoming" title="APG token status">
+      <IconCoin size={11} />
+      {live ? '$APG · LIVE' : '$APG CA · SOON'}
+    </Link>
+  );
+}
+
 function Topbar() {
   const location = useLocation();
   const { account } = useWallet();
@@ -256,6 +278,7 @@ function Topbar() {
       </div>
 
       <div className="ml-auto flex items-center gap-2.5">
+        <CaPill />
         <span className="pill max-[640px]:hidden" title="Estimated network fee (Phase 1 preview)">
           <IconFlame size={11} className="text-gold" />
           <span className="num">{gas}</span>
@@ -302,13 +325,13 @@ function PhaseBanner() {
 
 /* ── Footer ───────────────────────────────────────────────────────── */
 
+/* /admin stays reachable by URL for operators — deliberately unlisted. */
 const FOOTER_LINKS = [
   { to: '/how-it-works', label: 'How it works' },
   { to: '/apply', label: 'Apply for Launch' },
   { to: '/terms', label: 'Terms' },
   { to: '/privacy', label: 'Privacy' },
   { to: '/risk', label: 'Risk' },
-  { to: '/admin', label: 'Admin' },
 ];
 
 function Footer() {
