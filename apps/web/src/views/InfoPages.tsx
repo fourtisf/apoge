@@ -73,7 +73,7 @@ export function HowItWorks() {
   ];
 
   return (
-    <InfoShell title="How Apogee works">
+    <InfoShell title="How Apoge works">
       <div className="grid grid-cols-3 gap-4 max-[900px]:grid-cols-1">
         {steps.map(({ icon: Icon, title, body }) => (
           <div key={title} className="rounded-xl border border-line bg-panel2 p-4">
@@ -140,7 +140,7 @@ export function Terms() {
       <p className="rounded-xl border border-gold/25 bg-gold/5 p-3.5 text-[12px]">{LEGAL_NOTE}</p>
       <H>1 · The service</H>
       <p>
-        Apogee provides a platform for discovering token launches and, in Phase 1, a simulated
+        Apoge provides a platform for discovering token launches and, in Phase 1, a simulated
         participation environment. Access to the interface does not constitute an offer of
         securities, investment advice, or a solicitation to invest in any jurisdiction.
       </p>
@@ -159,7 +159,7 @@ export function Terms() {
       </p>
       <H>4 · No guarantees</H>
       <p>
-        Projects listed on Apogee are independent third parties. Listing does not imply
+        Projects listed on Apoge are independent third parties. Listing does not imply
         endorsement. Token values may go to zero. Past ROI figures are historical and are not
         indicative of future results.
       </p>
@@ -172,7 +172,7 @@ export function Terms() {
       <H>6 · Limitation of liability</H>
       <p>
         The service is provided “as is” without warranties. To the maximum extent permitted by
-        law, Apogee and its contributors are not liable for any loss arising from use of the
+        law, Apoge and its contributors are not liable for any loss arising from use of the
         service, including loss of funds, data, or profits.
       </p>
     </InfoShell>

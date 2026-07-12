@@ -18,7 +18,7 @@ const NONCE_TTL_MS = 5 * 60 * 1000;
 
 /** Exact sign-in message template from the contract — do not reformat. */
 function buildSignInMessage(wallet: string, nonce: string): string {
-  return `Apogee wants you to sign in with your wallet:\n${wallet}\n\nNonce: ${nonce}`;
+  return `Apoge wants you to sign in with your wallet:\n${wallet}\n\nNonce: ${nonce}`;
 }
 
 const walletAndChain = {

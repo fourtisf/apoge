@@ -115,7 +115,7 @@ function Sidebar() {
     <aside className="fixed inset-y-0 left-0 z-40 flex w-[264px] flex-col border-r border-line bg-panel/60 px-4 py-5 backdrop-blur max-[900px]:hidden">
       <NavLink to="/" className="flex items-center gap-2.5 px-2">
         <BrandMark size={26} />
-        <span className="text-[15.5px] font-semibold tracking-[0.16em] text-ivory">APOGEE</span>
+        <span className="text-[15.5px] font-semibold tracking-[0.16em] text-ivory">APOGE</span>
       </NavLink>
 
       <nav className="mt-7 flex flex-col gap-1" aria-label="Primary">
@@ -240,7 +240,7 @@ function TopbarSocials() {
         href={SOCIAL_LINKS.x}
         target="_blank"
         rel="noreferrer noopener"
-        aria-label="Apogee on X"
+        aria-label="Apoge on X"
         className="flex h-[30px] w-[30px] items-center justify-center rounded-[10px] border border-line bg-panel2 text-muted transition-all duration-300 hover:border-gold/40 hover:text-ivory"
       >
         <IconXSocial size={12} />
@@ -249,7 +249,7 @@ function TopbarSocials() {
         href={SOCIAL_LINKS.telegram}
         target="_blank"
         rel="noreferrer noopener"
-        aria-label="Apogee on Telegram"
+        aria-label="Apoge on Telegram"
         className="flex h-[30px] w-[30px] items-center justify-center rounded-[10px] border border-line bg-panel2 text-muted transition-all duration-300 hover:border-gold/40 hover:text-ivory"
       >
         <IconTelegram size={12} />
@@ -379,7 +379,7 @@ function Footer() {
             href={SOCIAL_LINKS.x}
             target="_blank"
             rel="noreferrer noopener"
-            aria-label="Apogee on X"
+            aria-label="Apoge on X"
             className="flex h-7 w-7 items-center justify-center rounded-lg border border-line bg-panel2 text-faint transition-all duration-300 hover:border-gold/40 hover:text-ivory"
           >
             <IconXSocial size={12} />
@@ -388,12 +388,12 @@ function Footer() {
             href={SOCIAL_LINKS.telegram}
             target="_blank"
             rel="noreferrer noopener"
-            aria-label="Apogee on Telegram"
+            aria-label="Apoge on Telegram"
             className="flex h-7 w-7 items-center justify-center rounded-lg border border-line bg-panel2 text-faint transition-all duration-300 hover:border-gold/40 hover:text-ivory"
           >
             <IconTelegram size={12} />
           </a>
-          <span className="label ml-2 !text-[9.5px]">© 2026 Apogee · Phase 1 preview</span>
+          <span className="label ml-2 !text-[9.5px]">© 2026 Apoge · Phase 1 preview</span>
         </span>
       </div>
     </footer>

@@ -38,7 +38,7 @@ Empty arrays for unknown wallets (not a 404 — the UI shows the empty state).
 → `{ nonce, message }`. `message` is the exact string the client must sign:
 
 ```
-Apogee wants you to sign in with your wallet:
+Apoge wants you to sign in with your wallet:
 {wallet}
 
 Nonce: {nonce}

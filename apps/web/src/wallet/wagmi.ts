@@ -11,7 +11,7 @@ export const wagmiConfig = createConfig({
   chains: [mainnet, base, bsc, baseSepolia, hardhat],
   connectors: [
     injected(),
-    coinbaseWallet({ appName: 'Apogee' }),
+    coinbaseWallet({ appName: 'Apoge' }),
     ...(wcProjectId ? [walletConnect({ projectId: wcProjectId, showQrModal: true })] : []),
   ],
   transports: {
