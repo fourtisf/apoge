@@ -225,10 +225,36 @@ function CaPill() {
   });
   const live = Object.values(data?.chains ?? {}).some((c) => c.apg);
   return (
-    <Link to="/token" className="pill pill-upcoming" title="APG token status">
+    <Link to="/token" className="pill pill-upcoming" title="Token status">
       <IconCoin size={11} />
-      {live ? '$APG · LIVE' : '$APG CA · SOON'}
+      {live ? '$APOGE · LIVE' : '$APOGE CA · SOON'}
     </Link>
+  );
+}
+
+/** X + Telegram, always visible up top — the footer is below the fold. */
+function TopbarSocials() {
+  return (
+    <span className="flex items-center gap-1.5 max-[900px]:hidden">
+      <a
+        href={SOCIAL_LINKS.x}
+        target="_blank"
+        rel="noreferrer noopener"
+        aria-label="Apogee on X"
+        className="flex h-[30px] w-[30px] items-center justify-center rounded-[10px] border border-line bg-panel2 text-muted transition-all duration-300 hover:border-gold/40 hover:text-ivory"
+      >
+        <IconXSocial size={12} />
+      </a>
+      <a
+        href={SOCIAL_LINKS.telegram}
+        target="_blank"
+        rel="noreferrer noopener"
+        aria-label="Apogee on Telegram"
+        className="flex h-[30px] w-[30px] items-center justify-center rounded-[10px] border border-line bg-panel2 text-muted transition-all duration-300 hover:border-gold/40 hover:text-ivory"
+      >
+        <IconTelegram size={12} />
+      </a>
+    </span>
   );
 }
 
@@ -278,6 +304,7 @@ function Topbar() {
       </div>
 
       <div className="ml-auto flex items-center gap-2.5">
+        <TopbarSocials />
         <CaPill />
         <span className="pill max-[640px]:hidden" title="Estimated network fee (Phase 1 preview)">
           <IconFlame size={11} className="text-gold" />

@@ -3,23 +3,20 @@ import { useQuery } from '@tanstack/react-query';
 import {
   fmtNum,
   ONCHAIN_CHAINS,
-  STAKING_APR_PCT,
   TIERS,
   truncAddr,
   type OnchainConfig,
 } from '@apogee/shared';
-import { IconCheck, IconCoin, IconCopy, IconOrbit } from '../components/icons';
+import {
+  IconCheck,
+  IconCoin,
+  IconCopy,
+  IconOrbit,
+  IconTelegram,
+  IconXSocial,
+} from '../components/icons';
 import { SpotlightCard, useCopy } from '../components/ui';
-
-/** APG allocation plan (Phase 2 publishes the final on-chain schedule). */
-const APG_ALLOCATION = [
-  { label: 'Staking Rewards', pct: 30, color: '#C9A366' },
-  { label: 'Ecosystem & Grants', pct: 20, color: '#EAD1A2' },
-  { label: 'Liquidity', pct: 15, color: '#8A6A3B' },
-  { label: 'Team · 24mo vest', pct: 15, color: '#98948B' },
-  { label: 'Treasury', pct: 15, color: '#5E5A52' },
-  { label: 'Public Rounds', pct: 5, color: '#3DD68C' },
-];
+import { SOCIAL_LINKS } from '../lib/links';
 
 function ContractRow({ chainId, address }: { chainId: string; address: string }) {
   const [copied, copy] = useCopy();
@@ -51,74 +48,64 @@ export function TokenPage() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      {/* Not-live notice — unmissable, anti-scam */}
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-gold/30 bg-gold/10 px-5 py-3.5">
-        <span className="pill pill-upcoming">NOT LIVE</span>
-        <p className="text-[12.5px] leading-relaxed text-gold-hi">
-          <span className="font-semibold">$APG is not live yet.</span> CA: coming soon — it will
-          be announced here and on our official X first. Any token claiming to be APG today is a
-          scam.
-        </p>
-      </div>
-
-      {/* Hero */}
-      <section className="panel foil p-7 max-[640px]:p-5" style={{ borderColor: 'rgba(201,163,102,.22)' }}>
-        <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gold/10 text-gold">
-            <IconCoin size={28} />
-          </div>
-          <div>
-            <h1 className="text-[22px] font-semibold tracking-tight text-ivory">
-              APG <span className="text-[13px] font-normal text-faint">· the Apogee token</span>
-            </h1>
-            <p className="mt-1 text-[12.5px] text-muted">
-              One token, one job: your stake is your seat at every launch.
-            </p>
-          </div>
+      {/* Teaser hero — the token is NOT live; no numbers, no ticker. */}
+      <section
+        className="panel foil p-9 text-center max-[640px]:p-6"
+        style={{ borderColor: 'rgba(201,163,102,.22)' }}
+      >
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gold/10 text-gold">
+          <IconCoin size={32} />
         </div>
-        <div className="mt-6 grid grid-cols-3 gap-4 max-[640px]:grid-cols-1">
-          {[
-            ['Total supply', '1,000,000,000', 'fixed — no mint function exists'],
-            ['Staking APR', `${STAKING_APR_PCT}%`, 'paid to stakers'],
-            ['Utility', 'Tier access', 'allocation weight + fee discounts'],
-          ].map(([k, v, sub]) => (
-            <div key={k}>
-              <div className="label">{k}</div>
-              <div className="num mt-1 text-[19px] font-medium text-ivory">{v}</div>
-              <div className="mt-0.5 text-[10.5px] text-faint">{sub}</div>
-            </div>
-          ))}
+        <h1 className="mt-5 text-[30px] font-semibold tracking-[0.14em] text-ivory">APOGE</h1>
+        <div className="num mt-3 text-[20px] font-medium tracking-[0.18em] text-gold">
+          CA · COMING SOON
+        </div>
+        <p className="mx-auto mt-4 max-w-md text-[12.5px] leading-relaxed text-muted">
+          The token is <span className="text-ivory">not live yet</span>. The contract address
+          will be announced on our official X and Telegram first — anything claiming to be it
+          before then is a scam.
+        </p>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <a
+            href={SOCIAL_LINKS.x}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="btn btn-gold !px-6"
+          >
+            <IconXSocial size={14} />
+            Follow on X
+          </a>
+          <a
+            href={SOCIAL_LINKS.telegram}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="btn btn-ghost !px-6"
+          >
+            <IconTelegram size={14} />
+            Join Telegram
+          </a>
         </div>
       </section>
 
-      {/* Allocation */}
-      <SpotlightCard className="card p-6 max-[640px]:p-5">
-        <h2 className="text-[14px] font-semibold text-ivory">Allocation</h2>
-        <div className="mt-4 flex h-3.5 w-full gap-[2px] overflow-hidden rounded-full">
-          {APG_ALLOCATION.map((a) => (
-            <div key={a.label} style={{ width: `${a.pct}%`, background: a.color }} title={`${a.label} ${a.pct}%`} />
-          ))}
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-1 max-[640px]:grid-cols-1">
-          {APG_ALLOCATION.map((a) => (
-            <div key={a.label} className="kv">
-              <span className="flex items-center gap-2.5 text-[12.5px] text-muted">
-                <span className="h-2.5 w-2.5 flex-none rounded-[3px]" style={{ background: a.color }} />
-                {a.label}
-              </span>
-              <span className="num text-[12.5px] text-ivory">{a.pct}%</span>
-            </div>
-          ))}
-        </div>
-        <p className="mt-3 text-[10.5px] leading-relaxed text-faint">
-          Planned distribution — the final on-chain vesting schedule is published at TGE (Phase 2).
-        </p>
-      </SpotlightCard>
+      {/* Once deployed, the official addresses appear here automatically. */}
+      {chains.length > 0 && (
+        <SpotlightCard className="card p-6 max-[640px]:p-5">
+          <h2 className="text-[14px] font-semibold text-ivory">Official contract address</h2>
+          <div className="mt-2">
+            {chains.map(([chainId, c]) => (
+              <ContractRow key={chainId} chainId={chainId} address={c.apg} />
+            ))}
+          </div>
+        </SpotlightCard>
+      )}
 
-      {/* Tier utility */}
+      {/* Platform utility — live product feature, no speculative numbers. */}
       <SpotlightCard className="card overflow-x-auto p-0">
         <div className="px-6 pb-2 pt-5">
-          <h2 className="text-[14px] font-semibold text-ivory">What staking APG unlocks</h2>
+          <h2 className="text-[14px] font-semibold text-ivory">What staking unlocks</h2>
+          <p className="mt-0.5 text-[11px] text-faint">
+            Stake to climb the orbit — your tier sets allocation, max buy and fees on every launch.
+          </p>
         </div>
         <table className="tbl min-w-[480px]">
           <thead>
@@ -144,40 +131,9 @@ export function TokenPage() {
         </table>
       </SpotlightCard>
 
-      {/* Contracts */}
-      <SpotlightCard className="card p-6 max-[640px]:p-5">
-        <h2 className="text-[14px] font-semibold text-ivory">Contract address (CA)</h2>
-        {chains.length === 0 ? (
-          <div className="mt-3">
-            <div className="kv">
-              <span className="k text-[12px]">CA</span>
-              <span className="pill pill-upcoming">Coming soon</span>
-            </div>
-            <p className="mt-3 text-[11.5px] leading-relaxed text-faint">
-              The official contract address will be published here and on{' '}
-              <a
-                href="https://x.com/Apogefun"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="text-gold hover:underline"
-              >
-                @Apogefun
-              </a>{' '}
-              at TGE — never anywhere else first.
-            </p>
-          </div>
-        ) : (
-          <div className="mt-2">
-            {chains.map(([chainId, c]) => (
-              <ContractRow key={chainId} chainId={chainId} address={c.apg} />
-            ))}
-          </div>
-        )}
-      </SpotlightCard>
-
-      <Link to="/staking" className="btn btn-gold self-start !px-6 !py-3">
+      <Link to="/staking" className="btn btn-gold self-center !px-6 !py-3">
         <IconOrbit size={15} />
-        Stake APG
+        Go to Staking
       </Link>
     </div>
   );
