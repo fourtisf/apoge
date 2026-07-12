@@ -51,6 +51,16 @@ export function TokenPage() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
+      {/* Not-live notice — unmissable, anti-scam */}
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-gold/30 bg-gold/10 px-5 py-3.5">
+        <span className="pill pill-upcoming">NOT LIVE</span>
+        <p className="text-[12.5px] leading-relaxed text-gold-hi">
+          <span className="font-semibold">$APG is not live yet.</span> CA: coming soon — it will
+          be announced here and on our official X first. Any token claiming to be APG today is a
+          scam.
+        </p>
+      </div>
+
       {/* Hero */}
       <section className="panel foil p-7 max-[640px]:p-5" style={{ borderColor: 'rgba(201,163,102,.22)' }}>
         <div className="flex items-center gap-4">
@@ -136,13 +146,26 @@ export function TokenPage() {
 
       {/* Contracts */}
       <SpotlightCard className="card p-6 max-[640px]:p-5">
-        <h2 className="text-[14px] font-semibold text-ivory">Token contracts</h2>
+        <h2 className="text-[14px] font-semibold text-ivory">Contract address (CA)</h2>
         {chains.length === 0 ? (
-          <p className="mt-3 text-[12.5px] leading-relaxed text-muted">
-            <span className="pill pill-upcoming mr-2">TBA</span>
-            APG deploys on-chain with Phase 2 — addresses will be published here and only here.
-            Anything claiming to be APG before that is a scam.
-          </p>
+          <div className="mt-3">
+            <div className="kv">
+              <span className="k text-[12px]">CA</span>
+              <span className="pill pill-upcoming">Coming soon</span>
+            </div>
+            <p className="mt-3 text-[11.5px] leading-relaxed text-faint">
+              The official contract address will be published here and on{' '}
+              <a
+                href="https://x.com/Apogefun"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-gold hover:underline"
+              >
+                @Apogefun
+              </a>{' '}
+              at TGE — never anywhere else first.
+            </p>
+          </div>
         ) : (
           <div className="mt-2">
             {chains.map(([chainId, c]) => (

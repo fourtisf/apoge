@@ -20,10 +20,13 @@ import {
   IconRocket,
   IconSearch,
   IconSignal,
+  IconTelegram,
   IconTrophy,
   IconWallet,
   IconX,
+  IconXSocial,
 } from './icons';
+import { SOCIAL_LINKS } from '../lib/links';
 
 const NAV = [
   { to: '/', label: 'Launchpad', icon: IconRocket, end: true },
@@ -321,7 +324,27 @@ function Footer() {
             {l.label}
           </Link>
         ))}
-        <span className="label ml-auto !text-[9.5px]">© 2026 Apogee · Phase 1 preview</span>
+        <span className="ml-auto flex items-center gap-2">
+          <a
+            href={SOCIAL_LINKS.x}
+            target="_blank"
+            rel="noreferrer noopener"
+            aria-label="Apogee on X"
+            className="flex h-7 w-7 items-center justify-center rounded-lg border border-line bg-panel2 text-faint transition-all duration-300 hover:border-gold/40 hover:text-ivory"
+          >
+            <IconXSocial size={12} />
+          </a>
+          <a
+            href={SOCIAL_LINKS.telegram}
+            target="_blank"
+            rel="noreferrer noopener"
+            aria-label="Apogee on Telegram"
+            className="flex h-7 w-7 items-center justify-center rounded-lg border border-line bg-panel2 text-faint transition-all duration-300 hover:border-gold/40 hover:text-ivory"
+          >
+            <IconTelegram size={12} />
+          </a>
+          <span className="label ml-2 !text-[9.5px]">© 2026 Apogee · Phase 1 preview</span>
+        </span>
       </div>
     </footer>
   );

@@ -137,6 +137,13 @@ export const IconLayers = (p: P) => (
   </svg>
 );
 
+export const IconTelegram = (p: P) => (
+  <svg {...base(p)}>
+    <path d="m22 2-7 20-4-9-9-4Z" />
+    <path d="M22 2 11 13" />
+  </svg>
+);
+
 export const IconTrophy = (p: P) => (
   <svg {...base(p)}>
     <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21 1.18.54 2.03 2.03 2.03 3.79" />
