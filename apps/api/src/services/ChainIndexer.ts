@@ -14,7 +14,7 @@ import { PAYMENT_DECIMALS, SALE_ABI } from '@apogee/shared';
 import type { ProjectStatus } from '@apogee/shared';
 import { clientFor } from '../lib/chains';
 import { ProjectModel } from '../models/Project';
-import { emitSaleProgress, emitActivity } from '../realtime';
+import { emitSaleProgress, emitActivity, emitProjectsChanged } from '../realtime';
 import { recordEventOnce } from './ActivityService';
 
 const POLL_MS = Number(process.env.CHAIN_INDEXER_INTERVAL_MS) || 20_000;
@@ -77,23 +77,28 @@ async function indexProject(projectId: unknown): Promise<void> {
     from = to + 1n;
   }
 
-  // Mirror authoritative totals from contract state.
-  const [raisedUnits, participants] = await Promise.all([
+  // Mirror authoritative totals + lifecycle from contract state.
+  const [raisedUnits, participants, finalized] = await Promise.all([
     client.readContract({ address, abi: SALE_ABI, functionName: 'raised' }),
     client.readContract({ address, abi: SALE_ABI, functionName: 'participants' }),
+    client.readContract({ address, abi: SALE_ABI, functionName: 'finalized' }),
   ]);
   const raised = paymentToUsd(raisedUnits);
   const nParticipants = Number(participants);
   const changed = raised !== project.raised || nParticipants !== project.participants;
 
-  await ProjectModel.updateOne(
-    { _id: project._id },
-    { $set: { raised, participants: nParticipants, lastIndexedBlock: Number(head) } },
-  );
-
-  if (changed) {
-    emitSaleProgress({ slug: project.slug, raised, participants: nParticipants });
+  const patch = { raised, participants: nParticipants, lastIndexedBlock: Number(head) };
+  // Contract truth wins over the time-based scheduler: a hard-cap-filled sale
+  // finalizes early on-chain, so reflect that as ended (and unpin featured).
+  if (finalized && project.status !== 'ended') {
+    Object.assign(patch, { status: 'ended', featured: false });
+    console.log(`[indexer] ${project.slug} finalized on-chain → ended`);
   }
+
+  await ProjectModel.updateOne({ _id: project._id }, { $set: patch });
+
+  if (changed) emitSaleProgress({ slug: project.slug, raised, participants: nParticipants });
+  if (finalized && project.status !== 'ended') emitProjectsChanged();
 }
 
 let running = false;

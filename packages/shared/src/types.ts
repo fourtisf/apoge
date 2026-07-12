@@ -122,6 +122,11 @@ export interface PositionDTO {
   claimedTokens: number;
   txRef: string;
   createdAt: string;
+  /** On-chain (Phase 3) position — claims happen on the sale contract, not the API. */
+  onchain?: boolean;
+  /** Sale contract + chain for on-chain positions (so the UI can link/claim). */
+  chainId?: number;
+  saleContract?: string;
 }
 
 export interface PortfolioSummary {

@@ -15,6 +15,7 @@ import { ApiError } from '../lib/errors';
 import { roundTokens, roundUsd } from '../lib/round';
 import { PositionModel } from '../models/Position';
 import type { ProjectDoc } from '../models/Project';
+import { onchainPositionsFor } from './OnchainPortfolio';
 
 /** Minimal position shape needed for DTO assembly (hydrated docs satisfy it). */
 interface PositionLike {
@@ -91,8 +92,16 @@ export async function getPortfolio(wallet: string): Promise<Portfolio> {
       return dto;
     });
 
+  // Merge on-chain (Phase 3) positions read straight from the sale contracts.
+  const onchain = await onchainPositionsFor(wallet);
+  for (const dto of onchain) {
+    invested += dto.invested;
+    estValue += dto.tokens * dto.price;
+    claimableUsd += dto.claimableTokens * dto.price;
+  }
+
   return {
-    positions,
+    positions: [...onchain, ...positions],
     summary: {
       invested: roundUsd(invested),
       estValue: roundUsd(estValue),
@@ -113,6 +122,9 @@ export interface ClaimResult {
  * double-claim cannot pay out twice.
  */
 export async function claim(wallet: string, positionId: string): Promise<ClaimResult> {
+  if (positionId.startsWith('onchain:')) {
+    throw new ApiError(400, 'ONCHAIN_POSITION', 'Claim on-chain positions on the sale page');
+  }
   if (!Types.ObjectId.isValid(positionId)) {
     throw new ApiError(404, 'NOT_FOUND', 'Position not found');
   }

@@ -17,6 +17,20 @@ function ClaimButton({ position }: { position: PositionDTO }) {
   const claim = useClaim();
   const claimable = position.claimableTokens;
 
+  // On-chain positions are claimed on the sale contract, not via the API —
+  // route the user to the sale page's buy panel (which handles claim/refund).
+  if (position.onchain) {
+    return (
+      <Link
+        to={`/sale/${position.projectSlug}`}
+        className="btn btn-ghost !px-3.5 !py-1.5 !text-[12px]"
+        title={claimable > 0 ? 'Claim on-chain' : 'View sale'}
+      >
+        {claimable > 0 ? 'Claim ↗' : 'View'}
+      </Link>
+    );
+  }
+
   const onClaim = async () => {
     try {
       const res = await claim.mutateAsync(position.id);
@@ -153,6 +167,7 @@ export function Portfolio() {
                         <span className="mt-0.5 flex items-center gap-1.5">
                           <span className="num text-[10.5px] text-faint">{pos.ticker}</span>
                           <ChainPill chain={pos.chain} />
+                          {pos.onchain && <span className="pill pill-live !text-[9px]">on-chain</span>}
                         </span>
                       </span>
                     </Link>
