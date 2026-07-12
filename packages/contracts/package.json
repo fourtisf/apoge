@@ -8,6 +8,11 @@
     "compile": "hardhat compile",
     "test": "hardhat test",
     "deploy:testnet": "hardhat run scripts/deploy-testnet.cjs --network baseSepolia",
+    "deploy:core": "hardhat run scripts/deploy-core.cjs",
+    "deploy:sale": "hardhat run scripts/deploy-sale.cjs",
+    "transfer:ownership": "hardhat run scripts/transfer-ownership.cjs",
+    "verify:core": "hardhat run scripts/verify.cjs",
+    "node": "hardhat node",
     "typecheck": "hardhat compile"
   },
   "devDependencies": {

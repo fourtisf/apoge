@@ -1,0 +1,25 @@
+{
+  "slug": "heliora",
+  "name": "Heliora",
+  "saleToken": "0xREPLACE_with_the_project_token_address",
+  "payment": "",
+  "treasury": "",
+  "priceUsd": 0.042,
+  "minBuyUsd": 50,
+  "softCapUsd": 250000,
+  "hardCapUsd": 850000,
+  "startISO": "2026-08-01T14:00:00Z",
+  "endISO": "2026-08-04T14:00:00Z",
+  "tgePct": 20,
+  "cliffDays": 30,
+  "vestDays": 180,
+  "tierCapsUsd": [250, 1250, 5000, 15000],
+  "tierFeesPct": [1, 1, 0.5, 0],
+
+  "_notes": [
+    "payment: leave \"\" to use the chain's USDC from deployments/<network>.json",
+    "treasury: leave \"\" to use the treasury from the core deployment (the multisig)",
+    "priceUsd: USDC per token. tierCapsUsd/tierFeesPct must have 4 entries (IGNITION..APOGEE).",
+    "amounts are human-readable; the deploy script converts to 6-decimal USDC units and bps."
+  ]
+}

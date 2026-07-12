@@ -13,3 +13,7 @@ coverage/
 # Hardhat
 packages/contracts/artifacts/
 packages/contracts/cache/
+
+# Local-chain deployment records (throwaway; real network files are committed)
+packages/contracts/deployments/localhost.json
+packages/contracts/deployments/hardhat.json

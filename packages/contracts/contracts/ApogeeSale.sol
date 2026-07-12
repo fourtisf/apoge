@@ -76,6 +76,7 @@ contract ApogeeSale is ReentrancyGuard, Ownable2Step {
     bool public funded;
     bool public finalized;
     bool public succeeded;
+    bool public proceedsWithdrawn;
     uint64 public tgeTime;
 
     uint256 public raised; // payment units, fees excluded
@@ -258,16 +259,18 @@ contract ApogeeSale is ReentrancyGuard, Ownable2Step {
 
     /* ── Owner settlement ────────────────────────────────────────── */
 
-    /// @notice Successful sale: proceeds + fees to the treasury.
+    /// @notice Successful sale: proceeds + fees to the treasury. One-shot.
+    /// @dev `raised`/`feesAccrued` are left intact as the permanent on-chain
+    ///      record (the off-chain indexer mirrors `raised`); a boolean guard —
+    ///      not zeroing — prevents a second withdrawal.
     function withdrawProceeds() external onlyOwner nonReentrant {
         require(finalized && succeeded, "Sale: not successful");
-        uint256 proceeds = raised;
-        uint256 fees = feesAccrued;
-        require(proceeds + fees > 0, "Sale: nothing to withdraw");
-        raised = 0;
-        feesAccrued = 0;
-        payment.safeTransfer(treasury, proceeds + fees);
-        emit ProceedsWithdrawn(proceeds, fees);
+        require(!proceedsWithdrawn, "Sale: already withdrawn");
+        uint256 amount = raised + feesAccrued;
+        require(amount > 0, "Sale: nothing to withdraw");
+        proceedsWithdrawn = true;
+        payment.safeTransfer(treasury, amount);
+        emit ProceedsWithdrawn(raised, feesAccrued);
     }
 
     /// @notice Return escrowed tokens that can never be claimed:

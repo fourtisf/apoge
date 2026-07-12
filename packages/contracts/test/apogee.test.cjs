@@ -266,7 +266,12 @@ describe('Apogee on-chain core', () => {
       const fees = await sale.feesAccrued();
       await sale.withdrawProceeds();
       expect(await usdc.balanceOf(treasury.address)).to.equal(raised + fees);
-      await expect(sale.withdrawProceeds()).to.be.revertedWith('Sale: nothing to withdraw');
+      // one-shot, and the on-chain `raised` record survives withdrawal so the
+      // indexer keeps mirroring the true total (not 0).
+      await expect(sale.withdrawProceeds()).to.be.revertedWith('Sale: already withdrawn');
+      expect(await sale.raised()).to.equal(raised);
+      expect(await sale.feesAccrued()).to.equal(fees);
+      expect(await sale.proceedsWithdrawn()).to.equal(true);
 
       const sold = await sale.totalTokensSold();
       await sale.withdrawUnsoldTokens();
