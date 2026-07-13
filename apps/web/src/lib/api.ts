@@ -9,6 +9,7 @@ import type {
   PortfolioSummary,
   PositionDTO,
   Project,
+  PublicApplicationDTO,
   StatsDTO,
   StatsDetailDTO,
 } from '@apogee/shared';
@@ -74,6 +75,7 @@ export const api = {
   statsDetail: () => get<{ detail: StatsDetailDTO }>('/stats/detail'),
   leaderboard: () => get<LeaderboardDTO>('/leaderboard'),
   news: () => get<{ announcements: AnnouncementDTO[] }>('/news'),
+  applications: () => get<{ applications: PublicApplicationDTO[] }>('/applications'),
   activity: () => get<{ events: ActivityEventDTO[] }>('/activity'),
   account: (wallet: string) => get<{ account: Account }>(`/account/${wallet}`),
   portfolio: (wallet: string) =>

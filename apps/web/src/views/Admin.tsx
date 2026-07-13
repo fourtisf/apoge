@@ -588,7 +588,7 @@ function NewsTab({ token }: { token: string }) {
 
 const APP_STATUS_META: Record<ApplicationStatus, { label: string; cls: string }> = {
   pending: { label: 'Pending', cls: 'pill-upcoming' },
-  accepted: { label: 'Accepted', cls: 'pill-live' },
+  accepted: { label: 'Approved', cls: 'pill-live' },
   rejected: { label: 'Rejected', cls: 'pill-red' },
 };
 

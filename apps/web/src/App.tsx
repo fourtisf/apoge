@@ -5,6 +5,7 @@ import { useRealtime } from './lib/queries';
 import { useSession, useUi } from './state/store';
 import { useWallet } from './wallet/useWallet';
 import { Admin } from './views/Admin';
+import { Applications } from './views/Applications';
 import { Apply } from './views/Apply';
 import { Home } from './views/Home';
 import { HowItWorks, Privacy, Risk, Terms } from './views/InfoPages';
@@ -47,6 +48,7 @@ export function App() {
           <Route path="/news" element={<News />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/apply" element={<Apply />} />
+          <Route path="/applications" element={<Applications />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/risk" element={<Risk />} />

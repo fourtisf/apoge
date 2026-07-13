@@ -113,6 +113,23 @@ export interface ApplicationDTO {
   reviewedAt?: string;
 }
 
+/** Public, PII-free view of an application for the /applications page. */
+export interface PublicApplicationDTO {
+  id: string;
+  projectName: string;
+  ticker: string;
+  chain: Chain;
+  website: string;
+  pitch: string;
+  raiseTarget: number;
+  x?: string;
+  telegram?: string;
+  /** URL to the logo image endpoint (not the raw data URL). */
+  logo?: string;
+  status: ApplicationStatus;
+  ts: string;
+}
+
 export interface Account {
   wallet: string;
   chainType: ChainType;

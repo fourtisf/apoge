@@ -15,6 +15,7 @@ import {
   IconCopy,
   IconCheck,
   IconFlame,
+  IconLayers,
   IconOrbit,
   IconCoin,
   IconNews,
@@ -48,6 +49,7 @@ function pageTitle(pathname: string): string {
   if (pathname.startsWith('/staking')) return 'Staking';
   if (pathname.startsWith('/portfolio')) return 'Portfolio';
   if (pathname.startsWith('/admin')) return 'Admin';
+  if (pathname.startsWith('/applications')) return 'Applications';
   if (pathname.startsWith('/apply')) return 'Apply';
   if (pathname.startsWith('/stats')) return 'Stats';
   if (pathname.startsWith('/leaderboard')) return 'Leaderboard';
@@ -138,6 +140,10 @@ function Sidebar() {
         <NavLink to="/apply" className="nav-item">
           <IconSend size={16} />
           Apply for Launch
+        </NavLink>
+        <NavLink to="/applications" className="nav-item">
+          <IconLayers size={16} />
+          Applications
         </NavLink>
       </nav>
 

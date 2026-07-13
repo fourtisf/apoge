@@ -12,6 +12,7 @@ import { startSaleScheduler } from './services/SaleScheduler';
 import { activityRouter } from './routes/activity';
 import { adminRouter } from './routes/admin';
 import { applyRouter } from './routes/apply';
+import { applicationsRouter } from './routes/applications';
 import { authRouter } from './routes/auth';
 import { leaderboardRouter } from './routes/leaderboard';
 import { newsRouter } from './routes/news';
@@ -52,6 +53,7 @@ async function main(): Promise<void> {
   app.use('/api/auth', authRouter);
   app.use('/api/admin', adminRouter);
   app.use('/api/apply', applyRouter);
+  app.use('/api/applications', applicationsRouter);
   app.use('/api/onchain', onchainRouter);
   app.use('/api/leaderboard', leaderboardRouter);
   app.use('/api/news', newsRouter);
