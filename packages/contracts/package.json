@@ -12,6 +12,7 @@
     "deploy:sale": "hardhat run scripts/deploy-sale.cjs",
     "transfer:ownership": "hardhat run scripts/transfer-ownership.cjs",
     "verify:core": "hardhat run scripts/verify.cjs",
+    "demo:lifecycle": "hardhat run scripts/lifecycle-demo.cjs",
     "node": "hardhat node",
     "typecheck": "hardhat compile"
   },
