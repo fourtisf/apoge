@@ -659,9 +659,9 @@ function ApplicationsTab({
           return (
             <section key={a.id} className="panel p-5">
               <div className="flex flex-wrap items-center gap-2.5">
-                {a.logoUrl && (
+                {a.logo && (
                   <img
-                    src={a.logoUrl}
+                    src={a.logo}
                     alt=""
                     className="h-7 w-7 flex-none rounded-lg border border-line object-cover"
                     onError={(e) => {
@@ -703,7 +703,16 @@ function ApplicationsTab({
                 <a href={`mailto:${a.contactEmail}`} className="text-muted hover:text-ivory">
                   {a.contactEmail}
                 </a>
-                {a.devHandle && <span className="text-faint">dev {a.devHandle}</span>}
+                {a.devHandle && (
+                  <a
+                    href={`https://t.me/${a.devHandle.replace(/^@/, '')}`}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="text-muted hover:text-ivory"
+                  >
+                    dev TG {a.devHandle.startsWith('@') ? a.devHandle : `@${a.devHandle}`}
+                  </a>
+                )}
                 {a.devEmail && (
                   <a href={`mailto:${a.devEmail}`} className="text-muted hover:text-ivory">
                     {a.devEmail}

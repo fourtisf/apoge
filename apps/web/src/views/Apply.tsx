@@ -7,6 +7,39 @@ import { toast } from '../state/store';
 const inputCls =
   'w-full rounded-xl border border-line-strong bg-panel2 px-3 py-2.5 text-[13px] text-ivory outline-none transition-colors focus:border-gold/50';
 
+const MAX_LOGO_BYTES = 10 * 1024 * 1024;
+
+/** Read an image file, cover-crop to a centered square, resize, and encode as
+ *  a compact data URL — kept small so it fits in the request and the DB. */
+async function fileToSquareDataUrl(file: File, size = 256): Promise<string> {
+  const src = await new Promise<string>((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result as string);
+    fr.onerror = () => reject(new Error('read failed'));
+    fr.readAsDataURL(file);
+  });
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const im = new Image();
+    im.onload = () => resolve(im);
+    im.onerror = () => reject(new Error('not an image'));
+    im.src = src;
+  });
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('canvas unsupported');
+  const side = Math.min(img.width, img.height);
+  ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
+  let quality = 0.85;
+  let out = canvas.toDataURL('image/webp', quality);
+  while (out.length > 90_000 && quality > 0.4) {
+    quality -= 0.15;
+    out = canvas.toDataURL('image/webp', quality);
+  }
+  return out;
+}
+
 export function Apply() {
   const [form, setForm] = useState({
     projectName: '',
@@ -17,7 +50,7 @@ export function Apply() {
     raiseTarget: '',
     x: '',
     telegram: '',
-    logoUrl: '',
+    logo: '',
     devHandle: '',
     devEmail: '',
     pitch: '',
@@ -27,6 +60,25 @@ export function Apply() {
 
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
+
+  const onLogoPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // let the same file be re-picked after a remove
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Invalid file', 'Please choose an image (PNG, JPG or WebP).');
+      return;
+    }
+    if (file.size > MAX_LOGO_BYTES) {
+      toast.error('Image too large', 'Please choose a file under 10 MB.');
+      return;
+    }
+    try {
+      set('logo', await fileToSquareDataUrl(file));
+    } catch {
+      toast.error('Could not read image', 'Try a different file.');
+    }
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +94,7 @@ export function Apply() {
         raiseTarget: Number(form.raiseTarget) || 0,
         x: form.x || undefined,
         telegram: form.telegram || undefined,
-        logoUrl: form.logoUrl || undefined,
+        logo: form.logo || undefined,
         devHandle: form.devHandle || undefined,
         devEmail: form.devEmail || undefined,
       });
@@ -108,6 +160,39 @@ export function Apply() {
           <input className={inputCls} type="email" required value={form.contactEmail} onChange={(e) => set('contactEmail', e.target.value)} />
         </label>
 
+        <div className="col-span-2 flex flex-col gap-1.5 max-[640px]:col-span-1">
+          <span className="label">Project logo</span>
+          <div className="flex items-center gap-3">
+            <div className="flex h-16 w-16 flex-none items-center justify-center overflow-hidden rounded-xl border border-line-strong bg-panel2">
+              {form.logo ? (
+                <img src={form.logo} alt="Logo preview" className="h-full w-full object-cover" />
+              ) : (
+                <span className="label !text-[9px] text-faint">LOGO</span>
+              )}
+            </div>
+            <div className="flex flex-col items-start gap-1">
+              <input
+                id="logo-upload"
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={onLogoPick}
+              />
+              <label htmlFor="logo-upload" className="btn btn-dim cursor-pointer !px-3.5 !py-2 !text-[12px]">
+                {form.logo ? 'Change logo' : 'Upload logo'}
+              </label>
+              {form.logo && (
+                <button type="button" className="text-[11px] text-red hover:underline" onClick={() => set('logo', '')}>
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
+          <span className="text-[11px] leading-relaxed text-faint">
+            Square image like a profile picture — we resize it to 256×256. PNG, JPG or WebP, up to 10 MB.
+          </span>
+        </div>
+
         <label className="flex flex-col gap-1.5">
           <span className="label">Raise target (USD)</span>
           <input
@@ -122,26 +207,25 @@ export function Apply() {
           />
         </label>
         <label className="flex flex-col gap-1.5">
-          <span className="label">Logo URL</span>
-          <input className={inputCls} type="url" placeholder="https://…/logo.png" value={form.logoUrl} onChange={(e) => set('logoUrl', e.target.value)} />
-        </label>
-
-        <label className="flex flex-col gap-1.5">
           <span className="label">X / Twitter</span>
           <input className={inputCls} type="url" placeholder="https://x.com/…" value={form.x} onChange={(e) => set('x', e.target.value)} />
         </label>
+
         <label className="flex flex-col gap-1.5">
           <span className="label">Telegram</span>
           <input className={inputCls} type="url" placeholder="https://t.me/…" value={form.telegram} onChange={(e) => set('telegram', e.target.value)} />
         </label>
-
-        <label className="flex flex-col gap-1.5">
-          <span className="label">Dev handle (optional)</span>
-          <input className={inputCls} placeholder="@handle" value={form.devHandle} onChange={(e) => set('devHandle', e.target.value)} />
-        </label>
         <label className="flex flex-col gap-1.5">
           <span className="label">Dev email (optional)</span>
           <input className={inputCls} type="email" placeholder="dev@project.xyz" value={form.devEmail} onChange={(e) => set('devEmail', e.target.value)} />
+        </label>
+
+        <label className="col-span-2 flex flex-col gap-1.5 max-[640px]:col-span-1">
+          <span className="label">Dev Telegram (optional)</span>
+          <input className={inputCls} placeholder="@yourdev" value={form.devHandle} onChange={(e) => set('devHandle', e.target.value)} />
+          <span className="text-[11px] leading-relaxed text-faint">
+            The developer’s Telegram username so we can reach the dev directly — e.g. @yourdev.
+          </span>
         </label>
 
         <label className="col-span-2 flex flex-col gap-1.5 max-[640px]:col-span-1">

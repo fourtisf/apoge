@@ -37,6 +37,10 @@ export async function connectDb(options: ConnectDbOptions = {}): Promise<void> {
     memoryServer = await MongoMemoryServer.create();
     await mongoose.connect(memoryServer.getUri('apogee'));
     console.log('[db] MONGO_URI not set — using mongodb-memory-server (data is ephemeral)');
+    console.warn(
+      '[db] ⚠ EPHEMERAL DB: every restart WIPES applications/projects/positions. ' +
+        'Set MONGO_URI to persist (e.g. mongodb://127.0.0.1:27017/apogee).',
+    );
   } catch (err) {
     console.error('[db] Failed to start mongodb-memory-server.');
     console.error(

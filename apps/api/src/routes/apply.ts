@@ -7,6 +7,14 @@ import { ApplicationModel, toApplicationDTO } from '../models/Application';
 
 const optionalUrl = z.string().url().max(300).optional().or(z.literal(''));
 
+// Client uploads a logo, resized to a small square and encoded as a data URL.
+const optionalLogo = z
+  .string()
+  .regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/, 'logo must be an uploaded image')
+  .max(600_000)
+  .optional()
+  .or(z.literal(''));
+
 const applySchema = z.object({
   projectName: z.string().min(2).max(64),
   ticker: z.string().min(1).max(12),
@@ -17,7 +25,7 @@ const applySchema = z.object({
   raiseTarget: z.number().positive().max(1_000_000_000),
   x: optionalUrl,
   telegram: optionalUrl,
-  logoUrl: optionalUrl,
+  logo: optionalLogo,
   devHandle: z.string().max(64).optional().or(z.literal('')),
   devEmail: z.string().email().max(120).optional().or(z.literal('')),
 });

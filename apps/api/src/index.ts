@@ -37,6 +37,9 @@ async function main(): Promise<void> {
   // Dev + prod both front the API with a same-origin proxy, so permissive
   // CORS is fine here.
   app.use(cors());
+  // The apply form embeds a small (client-resized) logo as a data URL, so give
+  // that one route more headroom than the 100kb default.
+  app.use('/api/apply', express.json({ limit: '600kb' }));
   app.use(express.json({ limit: '100kb' }));
 
   // 30 POSTs/min per IP across the API (participate adds its own 10/min).

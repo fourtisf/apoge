@@ -11,7 +11,7 @@ export interface ApplicationEntity {
   raiseTarget: number;
   x?: string;
   telegram?: string;
-  logoUrl?: string;
+  logo?: string;
   devHandle?: string;
   devEmail?: string;
   ts: Date;
@@ -30,7 +30,7 @@ const applicationSchema = new Schema<ApplicationEntity>(
     raiseTarget: { type: Number, required: true, default: 0 },
     x: { type: String },
     telegram: { type: String },
-    logoUrl: { type: String },
+    logo: { type: String },
     devHandle: { type: String },
     devEmail: { type: String },
     ts: { type: Date, required: true, default: () => new Date() },
@@ -62,7 +62,7 @@ export function toApplicationDTO(doc: ApplicationDoc): ApplicationDTO {
     raiseTarget: doc.raiseTarget ?? 0,
     ...(doc.x ? { x: doc.x } : {}),
     ...(doc.telegram ? { telegram: doc.telegram } : {}),
-    ...(doc.logoUrl ? { logoUrl: doc.logoUrl } : {}),
+    ...(doc.logo ? { logo: doc.logo } : {}),
     ...(doc.devHandle ? { devHandle: doc.devHandle } : {}),
     ...(doc.devEmail ? { devEmail: doc.devEmail } : {}),
     ts: doc.ts.toISOString(),

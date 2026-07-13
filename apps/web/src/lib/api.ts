@@ -106,7 +106,7 @@ export const api = {
     raiseTarget: number;
     x?: string;
     telegram?: string;
-    logoUrl?: string;
+    logo?: string;
     devHandle?: string;
     devEmail?: string;
   }) => post<{ application: ApplicationDTO }>('/apply', input),

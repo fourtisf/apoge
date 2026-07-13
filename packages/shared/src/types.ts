@@ -101,9 +101,9 @@ export interface ApplicationDTO {
   /** Project socials (URLs). */
   x?: string;
   telegram?: string;
-  /** Link to the project logo image. */
-  logoUrl?: string;
-  /** Lead developer contact (optional). */
+  /** Uploaded project logo, stored as a data URL (square, resized). */
+  logo?: string;
+  /** Lead developer's Telegram handle (optional). */
   devHandle?: string;
   devEmail?: string;
   ts: string;
