@@ -56,10 +56,10 @@ const url = (host: string) => ({
   contactEmail: `team@${host}`,
 });
 
-// Every sample seeds as `pending` — the operator approves/rejects each one
-// from /admin. Projects are grouped only by rough quality for readability.
+// Samples seed across `pending` and `rejected` (no pre-approvals) — the
+// operator approves the good ones from /admin. Grouped by rough quality.
 export const SAMPLE_APPLICATIONS: SampleApp[] = [
-  // ── Established projects ──────────────────────────────────────────
+  // ── Established projects · pending ────────────────────────────────
   {
     projectName: 'Aurora Finance',
     ticker: 'AURA',
@@ -109,7 +109,7 @@ export const SAMPLE_APPLICATIONS: SampleApp[] = [
     devHandle: '@ironcladdev',
   },
 
-  // ── Growth-stage projects ────────────────────────────────────────
+  // ── Growth-stage projects · pending ──────────────────────────────
   {
     projectName: 'Helix Protocol',
     ticker: 'HLX',
@@ -191,7 +191,7 @@ export const SAMPLE_APPLICATIONS: SampleApp[] = [
       'Zephyr is a community memecoin with a wind-themed meta and a rewards mini-game. No product beyond the token and a Telegram community of 5,000 members.',
     raiseTarget: 80_000,
     logo: svgLogo(ICON.wind, '#C4B5FD', '#6D28D9'),
-    status: 'pending',
+    status: 'rejected',
   },
   {
     projectName: 'Cinder',
@@ -202,7 +202,7 @@ export const SAMPLE_APPLICATIONS: SampleApp[] = [
       'Cinder is a fair-launch memecoin with a burn mechanic and a Discord of 2,000. Anonymous team, no product or roadmap beyond the token.',
     raiseTarget: 50_000,
     logo: svgLogo(ICON.flame, '#FCA5A5', '#B91C1C'),
-    status: 'pending',
+    status: 'rejected',
   },
   {
     projectName: 'MoonDrift',
@@ -213,7 +213,7 @@ export const SAMPLE_APPLICATIONS: SampleApp[] = [
       'MoonDrift is a reflection token that rewards holders on every transaction. The contract is an unaudited fork with liquidity locked for only 30 days.',
     raiseTarget: 40_000,
     logo: svgLogo(ICON.wave, '#CBD5E1', '#475569'),
-    status: 'pending',
+    status: 'rejected',
   },
   {
     projectName: 'QuantumLeap',
@@ -224,7 +224,7 @@ export const SAMPLE_APPLICATIONS: SampleApp[] = [
       'QuantumLeap is an AI-powered, quantum-resistant blockchain for the metaverse. No testnet, no demo, and a $2.5M raise backed by a three-line whitepaper.',
     raiseTarget: 2_500_000,
     logo: svgLogo(ICON.grid, '#D1D5DB', '#4B5563'),
-    status: 'pending',
+    status: 'rejected',
   },
   {
     projectName: 'GigaChad',
@@ -235,7 +235,7 @@ export const SAMPLE_APPLICATIONS: SampleApp[] = [
       'GigaChad is a community meme token. No docs, no team and no utility — just vibes and a Telegram group.',
     raiseTarget: 30_000,
     logo: svgLogo(ICON.bolt, '#FDE68A', '#B45309'),
-    status: 'pending',
+    status: 'rejected',
   },
 ];
 
