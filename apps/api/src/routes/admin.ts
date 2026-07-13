@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { env } from '../env';
 import { asyncHandler } from '../lib/asyncHandler';
 import { ApiError } from '../lib/errors';
+import { notifyOps } from '../lib/notify';
 import { requireAdmin } from '../middleware/adminAuth';
 import { adminLoginLimiter } from '../middleware/rateLimit';
 import { AnnouncementModel, toAnnouncementDTO } from '../models/Announcement';
@@ -188,6 +189,32 @@ adminRouter.get(
   asyncHandler(async (_req, res) => {
     const docs = await ApplicationModel.find().sort({ ts: -1 }).limit(200);
     res.json({ applications: docs.map(toApplicationDTO) });
+  }),
+);
+
+const applicationStatusSchema = z.object({
+  status: z.enum(['pending', 'accepted', 'rejected']),
+});
+
+/** Accept / reject (or reopen) an application from the admin inbox. */
+adminRouter.patch(
+  '/applications/:id',
+  asyncHandler(async (req, res) => {
+    const id = z.string().regex(/^[0-9a-fA-F]{24}$/).parse(req.params.id);
+    const { status } = applicationStatusSchema.parse(req.body);
+    const update =
+      status === 'pending'
+        ? { status, $unset: { reviewedAt: '' } }
+        : { status, reviewedAt: new Date() };
+    const doc = await ApplicationModel.findByIdAndUpdate(id, update, { new: true });
+    if (!doc) throw new ApiError(404, 'NOT_FOUND', 'Application not found');
+    if (status !== 'pending') {
+      const mark = status === 'accepted' ? '✅' : '⛔';
+      notifyOps(
+        `${mark} Launch application <b>${status}</b>: <b>${doc.projectName}</b> (${doc.ticker} · ${doc.chain})`,
+      );
+    }
+    res.json({ application: toApplicationDTO(doc) });
   }),
 );
 

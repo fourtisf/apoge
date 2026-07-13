@@ -20,6 +20,7 @@ import {
   IconNews,
   IconRocket,
   IconSearch,
+  IconSend,
   IconSignal,
   IconTelegram,
   IconTrophy,
@@ -132,6 +133,12 @@ function Sidebar() {
             {label}
           </NavLink>
         ))}
+
+        <div className="label mb-1 mt-5 px-3">For builders</div>
+        <NavLink to="/apply" className="nav-item">
+          <IconSend size={16} />
+          Apply for Launch
+        </NavLink>
       </nav>
 
       <div className="mt-auto flex flex-col gap-3">

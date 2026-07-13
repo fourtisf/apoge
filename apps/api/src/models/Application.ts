@@ -1,5 +1,5 @@
 import mongoose, { Schema, type HydratedDocument } from 'mongoose';
-import type { ApplicationDTO, Chain } from '@apogee/shared';
+import type { ApplicationDTO, ApplicationStatus, Chain } from '@apogee/shared';
 
 export interface ApplicationEntity {
   projectName: string;
@@ -9,6 +9,8 @@ export interface ApplicationEntity {
   contactEmail: string;
   pitch: string;
   ts: Date;
+  status: ApplicationStatus;
+  reviewedAt?: Date | null;
 }
 
 const applicationSchema = new Schema<ApplicationEntity>(
@@ -20,6 +22,14 @@ const applicationSchema = new Schema<ApplicationEntity>(
     contactEmail: { type: String, required: true },
     pitch: { type: String, required: true },
     ts: { type: Date, required: true, default: () => new Date() },
+    status: {
+      type: String,
+      required: true,
+      enum: ['pending', 'accepted', 'rejected'],
+      default: 'pending',
+      index: true,
+    },
+    reviewedAt: { type: Date, default: null },
   },
   { versionKey: false },
 );
@@ -38,5 +48,8 @@ export function toApplicationDTO(doc: ApplicationDoc): ApplicationDTO {
     contactEmail: doc.contactEmail,
     pitch: doc.pitch,
     ts: doc.ts.toISOString(),
+    // Legacy rows created before this field default to 'pending'.
+    status: doc.status ?? 'pending',
+    ...(doc.reviewedAt ? { reviewedAt: doc.reviewedAt.toISOString() } : {}),
   };
 }

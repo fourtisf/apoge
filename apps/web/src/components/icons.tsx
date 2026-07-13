@@ -165,6 +165,13 @@ export const IconCoin = (p: P) => (
   </svg>
 );
 
+export const IconSend = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M14.54 21.69a.5.5 0 0 0 .94-.03l6.5-19a.5.5 0 0 0-.64-.63l-19 6.5a.5.5 0 0 0-.02.94l7.93 3.18a2 2 0 0 1 1.11 1.11z" />
+    <path d="m21.85 2.15-10.94 10.94" />
+  </svg>
+);
+
 /** Apogee brand mark: gold peak triangle. */
 export const BrandMark = ({ size = 26 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden>

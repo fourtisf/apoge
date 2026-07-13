@@ -1,17 +1,19 @@
 import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import {
   CHAIN_META,
   fmtUsdCompact,
   ONCHAIN_CHAINS,
+  type ApplicationDTO,
+  type ApplicationStatus,
   type Chain,
   type Project,
   type ProjectStatus,
   type SettlementMode,
 } from '@apogee/shared';
-import { IconCheck, IconX } from '../components/icons';
+import { IconCheck, IconRocket, IconX } from '../components/icons';
 import { ChainPill, LogoTile, Skeleton, StatusPill } from '../components/ui';
 import { adminApi, ApiError, type AdminProjectInput } from '../lib/api';
 import { timeAgo } from '../lib/time';
@@ -70,6 +72,27 @@ const BLANK: AdminProjectInput = {
 
 function toInput(p: Project): AdminProjectInput {
   return { ...p, raised: p.raised, participants: p.participants };
+}
+
+/** Seed a new project draft from an accepted application. */
+function appToProjectInput(a: ApplicationDTO): AdminProjectInput {
+  const slug =
+    a.projectName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 48) || 'new-launch';
+  return {
+    ...BLANK,
+    name: a.projectName,
+    ticker: a.ticker.toUpperCase(),
+    chain: a.chain,
+    slug,
+    description: a.pitch.slice(0, 300),
+    about: a.pitch.slice(0, 2000),
+    socials: { website: a.website },
+    logo: { ...BLANK.logo, letter: (a.ticker[0] ?? a.projectName[0] ?? 'A').toUpperCase() },
+  };
 }
 
 /** ISO ↔ <input type="datetime-local"> (local time, minute precision). */
@@ -559,6 +582,150 @@ function NewsTab({ token }: { token: string }) {
   );
 }
 
+/* ── Applications inbox ───────────────────────────────────────────── */
+
+const APP_STATUS_META: Record<ApplicationStatus, { label: string; cls: string }> = {
+  pending: { label: 'Pending', cls: 'pill-upcoming' },
+  accepted: { label: 'Accepted', cls: 'pill-live' },
+  rejected: { label: 'Rejected', cls: 'pill-red' },
+};
+
+const APP_FILTERS = ['pending', 'accepted', 'rejected', 'all'] as const;
+type AppFilter = (typeof APP_FILTERS)[number];
+
+function ApplicationsTab({
+  token,
+  query,
+  onCreateFromApp,
+}: {
+  token: string;
+  query: UseQueryResult<ApplicationDTO[]>;
+  onCreateFromApp: (a: ApplicationDTO) => void;
+}) {
+  const qc = useQueryClient();
+  const [filter, setFilter] = useState<AppFilter>('pending');
+
+  const decide = useMutation({
+    mutationFn: (v: { id: string; status: ApplicationStatus }) =>
+      adminApi.setApplicationStatus(token, v.id, v.status),
+    onSuccess: (_res, v) => {
+      toast.success(
+        v.status === 'accepted'
+          ? 'Application accepted'
+          : v.status === 'rejected'
+            ? 'Application rejected'
+            : 'Application reopened',
+      );
+      qc.invalidateQueries({ queryKey: ['admin-applications'] });
+    },
+    onError: (err) => toast.error('Update failed', errMsg(err)),
+  });
+
+  if (query.isLoading) return <Skeleton className="h-[300px] !rounded-2xl" />;
+
+  const all = query.data ?? [];
+  const counts: Record<AppFilter, number> = {
+    pending: all.filter((a) => a.status === 'pending').length,
+    accepted: all.filter((a) => a.status === 'accepted').length,
+    rejected: all.filter((a) => a.status === 'rejected').length,
+    all: all.length,
+  };
+  const rows = filter === 'all' ? all : all.filter((a) => a.status === filter);
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-1 self-start rounded-xl border border-line bg-panel p-1">
+        {APP_FILTERS.map((f) => (
+          <button key={f} className="tab capitalize" data-on={filter === f} onClick={() => setFilter(f)}>
+            {f}
+            <span className="num ml-1.5 text-[10px] text-faint">{counts[f]}</span>
+          </button>
+        ))}
+      </div>
+
+      {rows.length === 0 ? (
+        <div className="panel p-10 text-center text-[13px] text-muted">
+          {all.length === 0
+            ? 'No applications yet.'
+            : filter === 'pending'
+              ? 'Nothing waiting for review — you’re all caught up.'
+              : `No ${filter} applications.`}
+        </div>
+      ) : (
+        rows.map((a) => {
+          const busy = decide.isPending && decide.variables?.id === a.id;
+          return (
+            <section key={a.id} className="panel p-5">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="text-[14px] font-semibold text-ivory">{a.projectName}</span>
+                <span className="num text-[11px] text-faint">{a.ticker}</span>
+                <ChainPill chain={a.chain} />
+                <span className={`pill ${APP_STATUS_META[a.status].cls}`}>
+                  {APP_STATUS_META[a.status].label}
+                </span>
+                <span className="num ml-auto text-[10.5px] text-faint">
+                  {a.reviewedAt ? `reviewed ${timeAgo(a.reviewedAt)}` : timeAgo(a.ts)}
+                </span>
+              </div>
+              <p className="mt-2.5 text-[12.5px] leading-relaxed text-muted">{a.pitch}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-line pt-3 text-[12px]">
+                <a
+                  href={a.website}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="text-gold hover:underline"
+                >
+                  {a.website}
+                </a>
+                <a href={`mailto:${a.contactEmail}`} className="text-muted hover:text-ivory">
+                  {a.contactEmail}
+                </a>
+                <div className="ml-auto flex flex-wrap items-center gap-2">
+                  {a.status !== 'accepted' && (
+                    <button
+                      className="btn btn-dim !px-3 !py-1.5 !text-[12px] !text-mint"
+                      disabled={busy}
+                      onClick={() => decide.mutate({ id: a.id, status: 'accepted' })}
+                    >
+                      <IconCheck size={13} /> Accept
+                    </button>
+                  )}
+                  {a.status !== 'rejected' && (
+                    <button
+                      className="btn btn-dim !px-3 !py-1.5 !text-[12px] !text-red"
+                      disabled={busy}
+                      onClick={() => decide.mutate({ id: a.id, status: 'rejected' })}
+                    >
+                      <IconX size={13} /> Reject
+                    </button>
+                  )}
+                  {a.status !== 'pending' && (
+                    <button
+                      className="btn btn-ghost !px-3 !py-1.5 !text-[12px]"
+                      disabled={busy}
+                      onClick={() => decide.mutate({ id: a.id, status: 'pending' })}
+                    >
+                      Reopen
+                    </button>
+                  )}
+                  {a.status === 'accepted' && (
+                    <button
+                      className="btn btn-gold !px-3 !py-1.5 !text-[12px]"
+                      onClick={() => onCreateFromApp(a)}
+                    >
+                      <IconRocket size={13} /> Create launch
+                    </button>
+                  )}
+                </div>
+              </div>
+            </section>
+          );
+        })
+      )}
+    </div>
+  );
+}
+
 function AdminPanel() {
   const token = useAdmin((s) => s.adminToken)!;
   const setToken = useAdmin((s) => s.setToken);
@@ -570,12 +737,13 @@ function AdminPanel() {
     queryFn: () => adminApi.projects(token).then((r) => r.projects),
     retry: false,
   });
+  // Always loaded (cheap) so the pending badge shows from any tab.
   const applications = useQuery({
     queryKey: ['admin-applications'],
     queryFn: () => adminApi.applications(token).then((r) => r.applications),
-    enabled: tab === 'applications',
     retry: false,
   });
+  const pendingCount = (applications.data ?? []).filter((a) => a.status === 'pending').length;
 
   // Expired/invalid admin token → back to login.
   if (projects.error instanceof ApiError && projects.error.status === 401) {
@@ -590,6 +758,11 @@ function AdminPanel() {
           {(['projects', 'applications', 'news'] as const).map((t) => (
             <button key={t} className="tab capitalize" data-on={tab === t} onClick={() => setTab(t)}>
               {t}
+              {t === 'applications' && pendingCount > 0 && (
+                <span className="num ml-1.5 rounded-full bg-gold/15 px-1.5 py-0.5 text-[10px] font-semibold text-gold">
+                  {pendingCount}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -662,32 +835,15 @@ function AdminPanel() {
             </table>
           </section>
         )
-      ) : applications.isLoading ? (
-        <Skeleton className="h-[300px] !rounded-2xl" />
-      ) : (applications.data ?? []).length === 0 ? (
-        <div className="panel p-10 text-center text-[13px] text-muted">No applications yet.</div>
       ) : (
-        <div className="flex flex-col gap-3">
-          {(applications.data ?? []).map((a) => (
-            <section key={a.id} className="panel p-5">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span className="text-[14px] font-semibold text-ivory">{a.projectName}</span>
-                <span className="num text-[11px] text-faint">{a.ticker}</span>
-                <ChainPill chain={a.chain} />
-                <span className="num ml-auto text-[10.5px] text-faint">{timeAgo(a.ts)}</span>
-              </div>
-              <p className="mt-2.5 text-[12.5px] leading-relaxed text-muted">{a.pitch}</p>
-              <div className="mt-3 flex flex-wrap gap-4 border-t border-line pt-3 text-[12px]">
-                <a href={a.website} target="_blank" rel="noreferrer noopener" className="text-gold hover:underline">
-                  {a.website}
-                </a>
-                <a href={`mailto:${a.contactEmail}`} className="text-muted hover:text-ivory">
-                  {a.contactEmail}
-                </a>
-              </div>
-            </section>
-          ))}
-        </div>
+        <ApplicationsTab
+          token={token}
+          query={applications}
+          onCreateFromApp={(a) => {
+            setEditing({ input: appToProjectInput(a), slug: null });
+            setTab('projects');
+          }}
+        />
       )}
     </div>
   );

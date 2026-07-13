@@ -84,6 +84,9 @@ export interface Project {
   cex?: string[];
 }
 
+/** Review state of a launch application, set by an operator in /admin. */
+export type ApplicationStatus = 'pending' | 'accepted' | 'rejected';
+
 /** "Apply for launch" submission from a project team. */
 export interface ApplicationDTO {
   id: string;
@@ -94,6 +97,10 @@ export interface ApplicationDTO {
   contactEmail: string;
   pitch: string;
   ts: string;
+  /** Operator decision — new applications start 'pending'. */
+  status: ApplicationStatus;
+  /** When an operator last accepted/rejected it (ISO). Absent while pending. */
+  reviewedAt?: string;
 }
 
 export interface Account {

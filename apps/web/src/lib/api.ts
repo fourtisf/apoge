@@ -132,6 +132,12 @@ export const adminApi = {
     request<{ deleted: string }>(`/admin/projects/${slug}`, { method: 'DELETE' }, token),
   applications: (token: string) =>
     request<{ applications: ApplicationDTO[] }>('/admin/applications', undefined, token),
+  setApplicationStatus: (token: string, id: string, status: ApplicationDTO['status']) =>
+    request<{ application: ApplicationDTO }>(
+      `/admin/applications/${id}`,
+      { method: 'PATCH', body: JSON.stringify({ status }) },
+      token,
+    ),
   createNews: (token: string, input: { title: string; body: string; tag: AnnouncementDTO['tag'] }) =>
     request<{ announcement: AnnouncementDTO }>(
       '/admin/news',
