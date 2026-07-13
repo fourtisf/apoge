@@ -1,11 +1,10 @@
 /*
- * Render the Apoge announcement banners (1200×675, @2x → 2400×1350 PNG).
+ * Render the Apoge announcement banners (1200x675, @2x -> 2400x1350 PNG).
  *
  *   CHROME_BIN=/path/to/chrome node docs/banners/make-banners.mjs
  *
- * Needs a Chromium/Chrome binary (headless). On the build sandbox that is
- * under /opt/pw-browsers/chromium-<version>/chrome-linux/chrome. Edit the
- * copy below and re-run.
+ * Needs a headless Chromium/Chrome binary. On the build sandbox it lives
+ * under /opt/pw-browsers (see CHROME below). Edit the copy and re-run.
  */
 import { writeFileSync, rmSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -32,9 +31,6 @@ const logoTile = (icon, from, to, n) =>
     <rect width="48" height="48" rx="13" fill="url(#G${n})"/>
     <g transform="translate(12,12)" fill="none" stroke="#0A0B0E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".9">${icon}</g></svg>`;
 
-const chip = (t) =>
-  `<span style="font-family:'Liberation Mono',monospace;font-size:15px;letter-spacing:.12em;color:#9aa0a8;border:1px solid #2a2e37;border-radius:999px;padding:7px 15px;background:#15171d">${t}</span>`;
-
 const BASE = `*{margin:0;box-sizing:border-box}
   body{width:1200px;height:675px;overflow:hidden;font-family:'Liberation Sans','DejaVu Sans',Arial,sans-serif;background:#0A0B0E;color:#EDE6D6;position:relative}
   .glow{position:absolute;inset:0;background:radial-gradient(1100px 620px at 88% -12%,rgba(201,163,102,.20),transparent 58%),radial-gradient(900px 600px at 0% 120%,rgba(201,163,102,.07),transparent 55%)}
@@ -46,25 +42,39 @@ const BASE = `*{margin:0;box-sizing:border-box}
   .kick{font-family:'Liberation Mono',monospace;font-size:16px;letter-spacing:.24em;color:#C9A366;text-transform:uppercase}
   .g{background:linear-gradient(100deg,#EAD1A2,#C9A366 55%,#8A6A3B);-webkit-background-clip:text;background-clip:text;color:transparent}`;
 
-// Generic centred banner (headline + sub + chips).
-function banner({ kicker, head, gold, tail, sub, chips, url }) {
-  return `<!doctype html><html><head><meta charset="utf8"><style>${BASE}
-  .peak{position:absolute;right:-40px;bottom:-150px;opacity:.045}
-  .mid{position:absolute;left:72px;right:72px;top:50%;transform:translateY(-50%)}
-  h1{font-size:62px;line-height:1.04;font-weight:700;letter-spacing:-.02em;color:#F3EEE2;margin-top:18px;max-width:980px}
-  .sub{font-size:22px;line-height:1.5;color:#9aa0a8;max-width:840px;margin-top:22px}
-  .chips{display:flex;gap:12px;margin-top:30px;flex-wrap:wrap}
-  </style></head><body>
-  <div class="glow"></div><div class="peak"><svg width="500" height="500" viewBox="0 0 32 32"><path d="M16 3 29 27H3L16 3Z" fill="#C9A366"/></svg></div><div class="frame"></div>
+const shell = (css, body, url) =>
+  `<!doctype html><html><head><meta charset="utf8"><style>${BASE}${css}</style></head><body>
+  <div class="glow"></div><div class="frame"></div>
   <div class="topbar"><div class="brand">${MARK}<span class="word">APOGE</span></div><span class="url">${url}</span></div>
-  <div class="mid"><div class="kick">${kicker}</div>
-    <h1>${head} <span class="g">${gold}</span>${tail ? ' ' + tail : ''}</h1>
-    <p class="sub">${sub}</p><div class="chips">${chips.map(chip).join('')}</div></div>
-  </body></html>`;
+  ${body}</body></html>`;
+
+// ── Banner 1 · Apply: centred, a 3-step flow + a gold CTA ──────────────
+function applyBanner() {
+  const steps = [['1', 'Submit'], ['2', 'Review'], ['3', 'Launch']];
+  const stepEls = steps
+    .map(([n, t], i) => `${i ? '<span class="arrow">&#8594;</span>' : ''}<span class="step"><span class="n">${n}</span>${t}</span>`)
+    .join('');
+  const css = `
+    .mid{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;padding:0 110px}
+    h1{font-size:58px;line-height:1.05;font-weight:700;letter-spacing:-.02em;color:#F3EEE2;margin-top:16px}
+    .sub{font-size:21px;line-height:1.5;color:#9aa0a8;margin:20px auto 0;max-width:780px}
+    .steps{display:flex;justify-content:center;align-items:center;gap:14px;margin-top:36px}
+    .step{display:inline-flex;align-items:center;gap:12px;font-family:'Liberation Mono',monospace;font-size:15px;letter-spacing:.08em;color:#EDE6D6;border:1px solid #2a2e37;background:#15171d;border-radius:999px;padding:12px 22px}
+    .n{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:99px;font-size:13px;font-weight:700;color:#0A0B0E;background:linear-gradient(180deg,#EAD1A2,#C9A366)}
+    .arrow{color:#C9A366;font-size:22px}
+    .cta{display:inline-block;margin-top:38px;font-size:18px;font-weight:700;color:#0A0B0E;background:linear-gradient(180deg,#EAD1A2,#C9A366 60%,#8A6A3B);border-radius:13px;padding:16px 34px;letter-spacing:.01em}`;
+  const body = `<div class="mid">
+    <div class="kick">Now live &#183; For builders</div>
+    <h1>Launch your token on <span class="g">Apoge.</span></h1>
+    <p class="sub">Submit once. Our team reviews every application &#8212; and you track your status live, from Pending to Approved.</p>
+    <div class="steps">${stepEls}</div>
+    <div><span class="cta">Apply for Launch  &#8594;</span></div>
+  </div>`;
+  return shell(css, body, 'apoge.fun/apply');
 }
 
-// Showcase banner: headline on the left, three real status cards on the right.
-function showcase() {
+// ── Banner 2 · Applications: headline + three real status cards ────────
+function applicationsBanner() {
   const cards = [
     { icon: ICON.sparkles, from: '#EAD1A2', to: '#8A6A3B', name: 'Aurora Finance', ticker: 'AURA', chain: 'BASE', raise: '$420K', status: 'approved' },
     { icon: ICON.layers, from: '#93C5FD', to: '#1D4ED8', name: 'Helix Protocol', ticker: 'HLX', chain: 'ETH', raise: '$650K', status: 'pending' },
@@ -76,67 +86,73 @@ function showcase() {
     <div class="ci"><div class="cn">${c.name}<span class="ct">${c.ticker}</span></div>
       <div class="cm"><span class="cp">${c.chain}</span><span class="cp gold">${c.raise}</span></div></div>
     <span class="badge ${c.status}">${label[c.status]}</span></div>`;
-  const legend = ['pending', 'approved', 'rejected']
-    .map((s) => `<span class="lg"><span class="dot ${s}"></span>${label[s]}</span>`)
-    .join('');
-  return `<!doctype html><html><head><meta charset="utf8"><style>${BASE}
-  .left{position:absolute;left:72px;top:50%;transform:translateY(-50%);width:530px}
-  h1{font-size:50px;line-height:1.06;font-weight:700;letter-spacing:-.02em;color:#F3EEE2;margin-top:16px}
-  .sub{font-size:20px;line-height:1.5;color:#9aa0a8;margin-top:18px;max-width:500px}
-  .legend{display:flex;gap:10px;margin-top:26px}
-  .lg{display:flex;align-items:center;gap:8px;font-family:'Liberation Mono',monospace;font-size:13px;letter-spacing:.06em;color:#9aa0a8;border:1px solid #23262d;border-radius:999px;padding:8px 13px}
-  .dot{width:8px;height:8px;border-radius:99px}
-  .dot.pending{background:#c9a366}.dot.approved{background:#3dd68c}.dot.rejected{background:#e5484d}
-  .cards{position:absolute;right:60px;top:50%;transform:translateY(-50%);width:456px;display:flex;flex-direction:column;gap:16px}
-  .card{display:flex;align-items:center;gap:14px;background:#111318;border:1px solid #23262d;border-radius:16px;padding:17px 18px}
-  .tile{flex:none}
-  .ci{flex:1;min-width:0}
-  .cn{font-size:17px;font-weight:600;color:#EDE6D6}
-  .ct{font-family:'Liberation Mono',monospace;font-size:12px;color:#6b7280;margin-left:7px}
-  .cm{display:flex;gap:8px;margin-top:8px}
-  .cp{font-family:'Liberation Mono',monospace;font-size:11px;letter-spacing:.08em;color:#9aa0a8;border:1px solid #2a2e37;border-radius:999px;padding:4px 10px}
-  .cp.gold{color:#ead1a2;border-color:rgba(201,163,102,.35);background:linear-gradient(180deg,rgba(201,163,102,.14),rgba(201,163,102,.05))}
-  .badge{font-family:'Liberation Mono',monospace;font-size:12px;letter-spacing:.1em;border-radius:999px;padding:6px 12px;text-transform:uppercase;border:1px solid;white-space:nowrap}
-  .badge.approved{color:#3dd68c;border-color:rgba(61,214,140,.32);background:rgba(61,214,140,.09)}
-  .badge.pending{color:#c9a366;border-color:rgba(201,163,102,.34);background:rgba(201,163,102,.09)}
-  .badge.rejected{color:#e5484d;border-color:rgba(229,72,77,.34);background:rgba(229,72,77,.09)}
-  </style></head><body>
-  <div class="glow"></div><div class="frame"></div>
-  <div class="topbar"><div class="brand">${MARK}<span class="word">APOGE</span></div><span class="url">apoge.fun/applications</span></div>
-  <div class="left"><div class="kick">Transparent review</div>
+  const legend = ['pending', 'approved', 'rejected'].map((s) => `<span class="lg"><span class="dot ${s}"></span>${label[s]}</span>`).join('');
+  const css = `
+    .left{position:absolute;left:72px;top:50%;transform:translateY(-50%);width:530px}
+    h1{font-size:50px;line-height:1.06;font-weight:700;letter-spacing:-.02em;color:#F3EEE2;margin-top:16px}
+    .sub{font-size:20px;line-height:1.5;color:#9aa0a8;margin-top:18px;max-width:500px}
+    .legend{display:flex;gap:10px;margin-top:26px}
+    .lg{display:flex;align-items:center;gap:8px;font-family:'Liberation Mono',monospace;font-size:13px;letter-spacing:.06em;color:#9aa0a8;border:1px solid #23262d;border-radius:999px;padding:8px 13px}
+    .dot{width:8px;height:8px;border-radius:99px}
+    .dot.pending{background:#c9a366}.dot.approved{background:#3dd68c}.dot.rejected{background:#e5484d}
+    .cards{position:absolute;right:60px;top:50%;transform:translateY(-50%);width:456px;display:flex;flex-direction:column;gap:16px}
+    .card{display:flex;align-items:center;gap:14px;background:#111318;border:1px solid #23262d;border-radius:16px;padding:17px 18px}
+    .tile{flex:none}.ci{flex:1;min-width:0}
+    .cn{font-size:17px;font-weight:600;color:#EDE6D6}
+    .ct{font-family:'Liberation Mono',monospace;font-size:12px;color:#6b7280;margin-left:7px}
+    .cm{display:flex;gap:8px;margin-top:8px}
+    .cp{font-family:'Liberation Mono',monospace;font-size:11px;letter-spacing:.08em;color:#9aa0a8;border:1px solid #2a2e37;border-radius:999px;padding:4px 10px}
+    .cp.gold{color:#ead1a2;border-color:rgba(201,163,102,.35);background:linear-gradient(180deg,rgba(201,163,102,.14),rgba(201,163,102,.05))}
+    .badge{font-family:'Liberation Mono',monospace;font-size:12px;letter-spacing:.1em;border-radius:999px;padding:6px 12px;text-transform:uppercase;border:1px solid;white-space:nowrap}
+    .badge.approved{color:#3dd68c;border-color:rgba(61,214,140,.32);background:rgba(61,214,140,.09)}
+    .badge.pending{color:#c9a366;border-color:rgba(201,163,102,.34);background:rgba(201,163,102,.09)}
+    .badge.rejected{color:#e5484d;border-color:rgba(229,72,77,.34);background:rgba(229,72,77,.09)}`;
+  const body = `<div class="left"><div class="kick">Transparent review</div>
     <h1>Every application,<br><span class="g">in the open.</span></h1>
-    <p class="sub">Every project that applies is public — you see exactly where each one stands.</p>
+    <p class="sub">Every project that applies is public &#8212; you see exactly where each one stands.</p>
     <div class="legend">${legend}</div></div>
-  <div class="cards">${cards.map(card).join('')}</div>
-  </body></html>`;
+    <div class="cards">${cards.map(card).join('')}</div>`;
+  return shell(css, body, 'apoge.fun/applications');
+}
+
+// ── Banner 3 · Launchpad: headline + a tier ladder on the right ────────
+function launchpadBanner() {
+  const tiers = [
+    ['APOGEE', 'Top allocation', '100%', true],
+    ['ZENITH', 'Guaranteed', '72%', false],
+    ['ORBIT', 'Guaranteed', '48%', false],
+    ['IGNITION', 'Lottery', '26%', false],
+  ];
+  const row = ([name, meta, w, top]) => `<div class="tier${top ? ' top' : ''}">
+    <span class="tname">${name}</span>
+    <span class="tbar"><i style="width:${w}"></i></span>
+    <span class="tmeta">${meta}</span></div>`;
+  const css = `
+    .peak{position:absolute;left:-70px;bottom:-160px;opacity:.05}
+    .left{position:absolute;left:72px;top:50%;transform:translateY(-50%);width:520px}
+    h1{font-size:50px;line-height:1.05;font-weight:700;letter-spacing:-.02em;color:#F3EEE2;margin-top:16px}
+    .sub{font-size:20px;line-height:1.5;color:#9aa0a8;margin-top:18px;max-width:470px}
+    .tiers{position:absolute;right:64px;top:50%;transform:translateY(-50%);width:456px;display:flex;flex-direction:column;gap:13px}
+    .tier{display:flex;align-items:center;gap:18px;background:#111318;border:1px solid #23262d;border-radius:14px;padding:19px 22px}
+    .tier.top{border-color:rgba(201,163,102,.42);background:linear-gradient(180deg,rgba(201,163,102,.12),rgba(201,163,102,.03))}
+    .tname{width:118px;font-size:17px;font-weight:600;letter-spacing:.08em;color:#c7ccd4}
+    .tier.top .tname{color:#F3EEE2}
+    .tbar{flex:1;height:8px;border-radius:99px;background:#23262d;overflow:hidden}
+    .tbar i{display:block;height:100%;background:linear-gradient(90deg,#8A6A3B,#EAD1A2);border-radius:99px}
+    .tmeta{width:118px;text-align:right;font-family:'Liberation Mono',monospace;font-size:12px;letter-spacing:.05em;color:#9aa0a8}
+    .tier.top .tmeta{color:#ead1a2}`;
+  const body = `<div class="peak"><svg width="520" height="520" viewBox="0 0 32 32"><path d="M16 3 29 27H3L16 3Z" fill="#C9A366"/></svg></div>
+    <div class="left"><div class="kick">Multi-chain IDO launchpad</div>
+    <h1>Where the next <span class="g">blue chips</span> launch.</h1>
+    <p class="sub">Stake APG, unlock your tier, and claim guaranteed allocations across every launch.</p></div>
+    <div class="tiers">${tiers.map(row).join('')}</div>`;
+  return shell(css, body, 'apoge.fun');
 }
 
 const JOBS = [
-  {
-    name: 'banner-apply',
-    html: banner({
-      kicker: 'Now live · For builders',
-      head: 'Launch your token on',
-      gold: 'Apoge.',
-      tail: '',
-      sub: 'Submit once — our team reviews every application, and you track your status live from Pending to Approved.',
-      chips: ['SOL', 'ETH', 'BASE', 'BNB'],
-      url: 'apoge.fun/apply',
-    }),
-  },
-  { name: 'banner-applications', html: showcase() },
-  {
-    name: 'banner-launchpad',
-    html: banner({
-      kicker: 'Multi-chain IDO launchpad',
-      head: 'Where the next',
-      gold: 'blue chips',
-      tail: 'launch.',
-      sub: 'Stake APG, unlock your tier, and claim guaranteed allocations across every launch. Custodial, vested, all-or-refund.',
-      chips: ['SOL', 'ETH', 'BASE', 'BNB'],
-      url: 'apoge.fun',
-    }),
-  },
+  { name: 'banner-apply', html: applyBanner() },
+  { name: 'banner-applications', html: applicationsBanner() },
+  { name: 'banner-launchpad', html: launchpadBanner() },
 ];
 
 for (const j of JOBS) {
