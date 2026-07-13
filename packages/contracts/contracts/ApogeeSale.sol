@@ -38,7 +38,10 @@ contract ApogeeSale is ReentrancyGuard, Ownable2Step {
         IERC20 payment; // e.g. USDC (6 decimals)
         IERC20 saleToken; // 18-decimal project token
         IApogeeStaking staking;
-        address treasury; // receives proceeds + fees on success
+        // Apoge's dedicated sale wallet — receives proceeds + fees on success
+        // and unsold tokens. MUST be a multisig (custodial model). Apoge
+        // settles with the project off-chain.
+        address treasury;
         uint256 price; // payment units per 1e18 sale tokens (e.g. $0.042 → 42_000)
         uint256 minBuy; // payment units (e.g. $50 → 50_000_000)
         uint256 softCap; // payment units
@@ -55,6 +58,7 @@ contract ApogeeSale is ReentrancyGuard, Ownable2Step {
     IERC20 public immutable payment;
     IERC20 public immutable saleToken;
     IApogeeStaking public immutable staking;
+    /// Apoge's dedicated sale wallet (a multisig): holds proceeds + fees.
     address public immutable treasury;
     uint256 public immutable price;
     uint256 public immutable minBuy;
@@ -259,7 +263,8 @@ contract ApogeeSale is ReentrancyGuard, Ownable2Step {
 
     /* ── Owner settlement ────────────────────────────────────────── */
 
-    /// @notice Successful sale: proceeds + fees to the treasury. One-shot.
+    /// @notice Successful sale: proceeds + fees to Apoge's treasury wallet.
+    ///         One-shot. Apoge settles the project's share off-chain.
     /// @dev `raised`/`feesAccrued` are left intact as the permanent on-chain
     ///      record (the off-chain indexer mirrors `raised`); a boolean guard —
     ///      not zeroing — prevents a second withdrawal.
@@ -273,8 +278,8 @@ contract ApogeeSale is ReentrancyGuard, Ownable2Step {
         emit ProceedsWithdrawn(raised, feesAccrued);
     }
 
-    /// @notice Return escrowed tokens that can never be claimed:
-    ///         the unsold remainder on success, everything on failure.
+    /// @notice Return escrowed tokens that can never be claimed to Apoge's
+    ///         treasury: the unsold remainder on success, everything on failure.
     ///         Sold-but-unclaimed tokens always stay escrowed.
     function withdrawUnsoldTokens() external onlyOwner nonReentrant {
         require(finalized, "Sale: not finalized");

@@ -4,6 +4,26 @@ Real funds. Every step is a gate: **do not open the next until the previous is
 closed.** The engineering is done and tested; what remains is audit, capital,
 legal, and a careful deploy. This file is the runbook.
 
+## Operating model — CUSTODIAL (Apoge holds the raise)
+
+Each `ApogeeSale` has one `treasury` = **Apoge's dedicated multisig**. On a
+successful sale, `withdrawProceeds()` sends **both the raise and the fees** to
+that wallet; Apoge then settles each project's share (raise minus the platform
+fee) **off-chain**. A project funds the sale's token escrow by transferring
+their tokens to the Apoge deployer, which calls `fund()`.
+
+Consequences to accept and plan for:
+- **Apoge is a custodian/financial intermediary.** Holding other people's
+  raise triggers money-transmission / securities exposure in most
+  jurisdictions — get counsel before taking real money; this is not optional.
+- The `treasury` wallet **MUST be a multisig** (a Safe, 2-of-3+). A single hot
+  key holding every project's raise is the single biggest risk in this design.
+- Keep clear off-chain records of each project's owed share and settle promptly;
+  custody without clean accounting is how launchpads get sued.
+
+(If you later prefer a non-custodial model — raise goes straight to the project,
+Apoge keeps only the fee — that's a small contract change; ask and I'll do it.)
+
 ## 0 · Preconditions (off-chain)
 
 - [ ] **External audit complete.** The three contracts (`APGToken`,
@@ -17,6 +37,8 @@ legal, and a careful deploy. This file is the runbook.
       in-app pages are templates), token-sale opinion for target jurisdictions.
 - [ ] **KYC + geo-blocking** decided and wired (vendor: Sumsub / Persona /
       Veriff) if your jurisdictions require it.
+- [ ] **Apoge treasury multisig ready** — the Safe that holds every raise (see
+      Operating model above). This is non-negotiable in the custodial model.
 - [ ] **Multisig ready**: a Safe (2-of-3 or better) that will own the sale
       contracts and hold the APG treasury. Signers' keys on hardware wallets.
 - [ ] **Capital ready**: gas, plus the APG for DEX liquidity.
