@@ -14,6 +14,12 @@ export function Apply() {
     chain: 'SOL' as Chain,
     website: '',
     contactEmail: '',
+    raiseTarget: '',
+    x: '',
+    telegram: '',
+    logoUrl: '',
+    devHandle: '',
+    devEmail: '',
     pitch: '',
   });
   const [busy, setBusy] = useState(false);
@@ -26,7 +32,20 @@ export function Apply() {
     e.preventDefault();
     setBusy(true);
     try {
-      await api.apply(form);
+      await api.apply({
+        projectName: form.projectName,
+        ticker: form.ticker,
+        chain: form.chain,
+        website: form.website,
+        contactEmail: form.contactEmail,
+        pitch: form.pitch,
+        raiseTarget: Number(form.raiseTarget) || 0,
+        x: form.x || undefined,
+        telegram: form.telegram || undefined,
+        logoUrl: form.logoUrl || undefined,
+        devHandle: form.devHandle || undefined,
+        devEmail: form.devEmail || undefined,
+      });
       setSent(true);
     } catch (err) {
       toast.error(
@@ -88,6 +107,43 @@ export function Apply() {
           <span className="label">Contact email</span>
           <input className={inputCls} type="email" required value={form.contactEmail} onChange={(e) => set('contactEmail', e.target.value)} />
         </label>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="label">Raise target (USD)</span>
+          <input
+            className={inputCls}
+            type="number"
+            required
+            min={1}
+            step="any"
+            placeholder="e.g. 250000"
+            value={form.raiseTarget}
+            onChange={(e) => set('raiseTarget', e.target.value)}
+          />
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="label">Logo URL</span>
+          <input className={inputCls} type="url" placeholder="https://…/logo.png" value={form.logoUrl} onChange={(e) => set('logoUrl', e.target.value)} />
+        </label>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="label">X / Twitter</span>
+          <input className={inputCls} type="url" placeholder="https://x.com/…" value={form.x} onChange={(e) => set('x', e.target.value)} />
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="label">Telegram</span>
+          <input className={inputCls} type="url" placeholder="https://t.me/…" value={form.telegram} onChange={(e) => set('telegram', e.target.value)} />
+        </label>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="label">Dev handle (optional)</span>
+          <input className={inputCls} placeholder="@handle" value={form.devHandle} onChange={(e) => set('devHandle', e.target.value)} />
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="label">Dev email (optional)</span>
+          <input className={inputCls} type="email" placeholder="dev@project.xyz" value={form.devEmail} onChange={(e) => set('devEmail', e.target.value)} />
+        </label>
+
         <label className="col-span-2 flex flex-col gap-1.5 max-[640px]:col-span-1">
           <span className="label">Pitch — product, traction, raise target (min 30 chars)</span>
           <textarea className={`${inputCls} min-h-[130px]`} required minLength={30} maxLength={2000} value={form.pitch} onChange={(e) => set('pitch', e.target.value)} />

@@ -5,6 +5,8 @@ import { notifyOps } from '../lib/notify';
 import { applyLimiter } from '../middleware/rateLimit';
 import { ApplicationModel, toApplicationDTO } from '../models/Application';
 
+const optionalUrl = z.string().url().max(300).optional().or(z.literal(''));
+
 const applySchema = z.object({
   projectName: z.string().min(2).max(64),
   ticker: z.string().min(1).max(12),
@@ -12,7 +14,23 @@ const applySchema = z.object({
   website: z.string().url().max(200),
   contactEmail: z.string().email().max(120),
   pitch: z.string().min(30).max(2000),
+  raiseTarget: z.number().positive().max(1_000_000_000),
+  x: optionalUrl,
+  telegram: optionalUrl,
+  logoUrl: optionalUrl,
+  devHandle: z.string().max(64).optional().or(z.literal('')),
+  devEmail: z.string().email().max(120).optional().or(z.literal('')),
 });
+
+/** Drop empty-string optionals so they don't persist as ''. */
+function cleanApplyInput(input: z.infer<typeof applySchema>) {
+  const trimmed = Object.fromEntries(
+    Object.entries(input).filter(([, v]) => !(typeof v === 'string' && v.length === 0)),
+  );
+  return trimmed as z.infer<typeof applySchema>;
+}
+
+const usd = (n: number) => `$${n.toLocaleString('en-US')}`;
 
 export const applyRouter = Router();
 
@@ -21,10 +39,11 @@ applyRouter.post(
   '/',
   applyLimiter,
   asyncHandler(async (req, res) => {
-    const input = applySchema.parse(req.body);
+    const input = cleanApplyInput(applySchema.parse(req.body));
     const doc = await ApplicationModel.create(input);
     notifyOps(
-      `📬 New launch application: <b>${input.projectName}</b> (${input.ticker} · ${input.chain})\n${input.website}`,
+      `📬 New launch application: <b>${input.projectName}</b> (${input.ticker} · ${input.chain})\n` +
+        `Raise target: ${usd(input.raiseTarget)}\n${input.website}`,
     );
     res.status(201).json({ application: toApplicationDTO(doc) });
   }),

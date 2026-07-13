@@ -90,7 +90,9 @@ function appToProjectInput(a: ApplicationDTO): AdminProjectInput {
     slug,
     description: a.pitch.slice(0, 300),
     about: a.pitch.slice(0, 2000),
-    socials: { website: a.website },
+    softCap: a.raiseTarget > 0 ? Math.max(1, Math.round(a.raiseTarget * 0.3)) : BLANK.softCap,
+    hardCap: a.raiseTarget > 0 ? a.raiseTarget : BLANK.hardCap,
+    socials: { website: a.website, ...(a.x ? { x: a.x } : {}) },
     logo: { ...BLANK.logo, letter: (a.ticker[0] ?? a.projectName[0] ?? 'A').toUpperCase() },
   };
 }
@@ -657,9 +659,20 @@ function ApplicationsTab({
           return (
             <section key={a.id} className="panel p-5">
               <div className="flex flex-wrap items-center gap-2.5">
+                {a.logoUrl && (
+                  <img
+                    src={a.logoUrl}
+                    alt=""
+                    className="h-7 w-7 flex-none rounded-lg border border-line object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                )}
                 <span className="text-[14px] font-semibold text-ivory">{a.projectName}</span>
                 <span className="num text-[11px] text-faint">{a.ticker}</span>
                 <ChainPill chain={a.chain} />
+                {a.raiseTarget > 0 && <span className="pill pill-gold">{fmtUsdCompact(a.raiseTarget)}</span>}
                 <span className={`pill ${APP_STATUS_META[a.status].cls}`}>
                   {APP_STATUS_META[a.status].label}
                 </span>
@@ -677,9 +690,25 @@ function ApplicationsTab({
                 >
                   {a.website}
                 </a>
+                {a.x && (
+                  <a href={a.x} target="_blank" rel="noreferrer noopener" className="text-muted hover:text-ivory">
+                    X
+                  </a>
+                )}
+                {a.telegram && (
+                  <a href={a.telegram} target="_blank" rel="noreferrer noopener" className="text-muted hover:text-ivory">
+                    Telegram
+                  </a>
+                )}
                 <a href={`mailto:${a.contactEmail}`} className="text-muted hover:text-ivory">
                   {a.contactEmail}
                 </a>
+                {a.devHandle && <span className="text-faint">dev {a.devHandle}</span>}
+                {a.devEmail && (
+                  <a href={`mailto:${a.devEmail}`} className="text-muted hover:text-ivory">
+                    {a.devEmail}
+                  </a>
+                )}
                 <div className="ml-auto flex flex-wrap items-center gap-2">
                   {a.status !== 'accepted' && (
                     <button

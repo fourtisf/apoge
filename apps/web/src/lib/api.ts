@@ -103,6 +103,12 @@ export const api = {
     website: string;
     contactEmail: string;
     pitch: string;
+    raiseTarget: number;
+    x?: string;
+    telegram?: string;
+    logoUrl?: string;
+    devHandle?: string;
+    devEmail?: string;
   }) => post<{ application: ApplicationDTO }>('/apply', input),
 };
 

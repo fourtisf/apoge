@@ -96,6 +96,16 @@ export interface ApplicationDTO {
   website: string;
   contactEmail: string;
   pitch: string;
+  /** Target raise, USD. */
+  raiseTarget: number;
+  /** Project socials (URLs). */
+  x?: string;
+  telegram?: string;
+  /** Link to the project logo image. */
+  logoUrl?: string;
+  /** Lead developer contact (optional). */
+  devHandle?: string;
+  devEmail?: string;
   ts: string;
   /** Operator decision — new applications start 'pending'. */
   status: ApplicationStatus;

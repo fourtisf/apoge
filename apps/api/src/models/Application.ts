@@ -8,6 +8,12 @@ export interface ApplicationEntity {
   website: string;
   contactEmail: string;
   pitch: string;
+  raiseTarget: number;
+  x?: string;
+  telegram?: string;
+  logoUrl?: string;
+  devHandle?: string;
+  devEmail?: string;
   ts: Date;
   status: ApplicationStatus;
   reviewedAt?: Date | null;
@@ -21,6 +27,12 @@ const applicationSchema = new Schema<ApplicationEntity>(
     website: { type: String, required: true },
     contactEmail: { type: String, required: true },
     pitch: { type: String, required: true },
+    raiseTarget: { type: Number, required: true, default: 0 },
+    x: { type: String },
+    telegram: { type: String },
+    logoUrl: { type: String },
+    devHandle: { type: String },
+    devEmail: { type: String },
     ts: { type: Date, required: true, default: () => new Date() },
     status: {
       type: String,
@@ -47,6 +59,12 @@ export function toApplicationDTO(doc: ApplicationDoc): ApplicationDTO {
     website: doc.website,
     contactEmail: doc.contactEmail,
     pitch: doc.pitch,
+    raiseTarget: doc.raiseTarget ?? 0,
+    ...(doc.x ? { x: doc.x } : {}),
+    ...(doc.telegram ? { telegram: doc.telegram } : {}),
+    ...(doc.logoUrl ? { logoUrl: doc.logoUrl } : {}),
+    ...(doc.devHandle ? { devHandle: doc.devHandle } : {}),
+    ...(doc.devEmail ? { devEmail: doc.devEmail } : {}),
     ts: doc.ts.toISOString(),
     // Legacy rows created before this field default to 'pending'.
     status: doc.status ?? 'pending',
