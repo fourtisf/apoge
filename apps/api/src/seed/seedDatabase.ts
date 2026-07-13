@@ -3,6 +3,7 @@ import { buildSeedProjects } from '@apogee/shared';
 import { ActivityEventModel, type ActivityEventEntity } from '../models/ActivityEvent';
 import { PositionModel } from '../models/Position';
 import { ProjectModel } from '../models/Project';
+import { seedApplications } from './sampleApplications';
 
 // Base58 alphabet (no 0, O, I, l) — for plausible-looking Solana addresses.
 const BASE58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
@@ -32,6 +33,7 @@ function randomAmountUsd(): number {
 export interface SeedSummary {
   projects: number;
   events: number;
+  applications: number;
 }
 
 /**
@@ -74,5 +76,8 @@ export async function seedDatabase(force = false): Promise<SeedSummary | null> {
     await ActivityEventModel.insertMany(events);
   }
 
-  return { projects: projects.length, events: events.length };
+  // Sample launch applications so the public Applications page isn't empty.
+  const applications = await seedApplications();
+
+  return { projects: projects.length, events: events.length, applications };
 }

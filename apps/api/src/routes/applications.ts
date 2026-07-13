@@ -63,7 +63,7 @@ applicationsRouter.get(
     const id = objectId.parse(req.params.id);
     const doc = await ApplicationModel.findById(id).select('logo').lean();
     const match = doc?.logo
-      ? /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/.exec(doc.logo)
+      ? /^data:(image\/(?:png|jpeg|webp|svg\+xml));base64,([A-Za-z0-9+/=]+)$/.exec(doc.logo)
       : null;
     if (!match) throw new ApiError(404, 'NOT_FOUND', 'No logo for this application');
     const buf = Buffer.from(match[2]!, 'base64');

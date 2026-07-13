@@ -26,6 +26,7 @@ async function main(): Promise<void> {
   console.log('[seed] done:');
   console.log(`[seed]   projects: ${projects} (${live} live)`);
   console.log(`[seed]   activity events: ${events} (last hour, live sales)`);
+  console.log(`[seed]   applications: ${summary.applications} (sample launch applications)`);
 
   await disconnectDb();
 }

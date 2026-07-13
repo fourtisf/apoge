@@ -55,7 +55,8 @@ export async function connectDb(options: ConnectDbOptions = {}): Promise<void> {
     const summary = await seedDatabase(false);
     if (summary) {
       console.log(
-        `[db] auto-seeded ${summary.projects} projects and ${summary.events} activity events`,
+        `[db] auto-seeded ${summary.projects} projects, ${summary.events} activity events, ` +
+          `${summary.applications} applications`,
       );
     }
   }
