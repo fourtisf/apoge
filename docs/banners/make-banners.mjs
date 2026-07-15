@@ -149,7 +149,40 @@ function launchpadBanner() {
   return shell(css, body, 'apoge.fun');
 }
 
+// ── Token launch: "$APOGE is live" with a LIVE pill, CA chip + CTAs ────
+function tokenLiveBanner() {
+  // Bake the real address in at launch:  APG_CA=0x... node make-banners.mjs
+  const CA = process.env.APG_CA;
+  const caChip = CA
+    ? `<div class="ca"><span class="lbl">CA</span>${CA}</div>`
+    : `<div class="ca"><span class="lbl">CA</span>Contract address live at apoge.fun/token</div>`;
+  const css = `
+    .mid{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;padding:0 90px}
+    .live{display:inline-flex;align-items:center;gap:11px;font-family:'Liberation Mono',monospace;font-size:15px;letter-spacing:.2em;color:#3dd68c;border:1px solid rgba(61,214,140,.30);background:rgba(61,214,140,.08);border-radius:999px;padding:9px 18px;text-transform:uppercase}
+    .live .dot{width:9px;height:9px;border-radius:99px;background:#3dd68c;box-shadow:0 0 0 5px rgba(61,214,140,.16)}
+    h1{font-size:80px;line-height:1.0;font-weight:800;letter-spacing:-.03em;color:#F3EEE2;margin-top:22px}
+    .sub{font-size:21px;line-height:1.5;color:#9aa0a8;margin:20px auto 0;max-width:720px}
+    .ca{display:inline-flex;align-items:center;gap:14px;margin-top:30px;font-family:'Liberation Mono',monospace;font-size:17px;letter-spacing:.03em;color:#EDE6D6;border:1px solid rgba(201,163,102,.35);background:linear-gradient(180deg,rgba(201,163,102,.10),rgba(201,163,102,.03));border-radius:14px;padding:15px 22px}
+    .ca .lbl{color:#C9A366;letter-spacing:.16em;font-size:13px}
+    .ctas{display:flex;justify-content:center;gap:14px;margin-top:30px}
+    .cta{font-size:17px;font-weight:700;color:#0A0B0E;background:linear-gradient(180deg,#EAD1A2,#C9A366 60%,#8A6A3B);border-radius:12px;padding:15px 30px}
+    .cta.ghost{color:#EDE6D6;background:none;border:1px solid #2a2e37}
+    .chips{display:flex;justify-content:center;gap:12px;margin-top:30px}
+    .chip{font-family:'Liberation Mono',monospace;font-size:14px;letter-spacing:.12em;color:#9aa0a8;border:1px solid #2a2e37;border-radius:999px;padding:6px 14px;background:#15171d}`;
+  const chips = ['SOL', 'ETH', 'BASE', 'BNB'].map((c) => `<span class="chip">${c}</span>`).join('');
+  const body = `<div class="mid">
+    <div><span class="live"><span class="dot"></span>Now live</span></div>
+    <h1><span class="g">$APOGE</span> is live.</h1>
+    <p class="sub">The token that powers every Apoge launch &#8212; stake to unlock your tier and claim guaranteed allocations.</p>
+    ${caChip}
+    <div class="ctas"><span class="cta">Trade $APOGE  &#8594;</span><span class="cta ghost">Stake now</span></div>
+    <div class="chips">${chips}</div>
+  </div>`;
+  return shell(css, body, 'apoge.fun/token');
+}
+
 const JOBS = [
+  { name: 'banner-token-live', html: tokenLiveBanner() },
   { name: 'banner-apply', html: applyBanner() },
   { name: 'banner-applications', html: applicationsBanner() },
   { name: 'banner-launchpad', html: launchpadBanner() },
